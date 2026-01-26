@@ -1,0 +1,11 @@
+frontend
+.git
+__pycache__
+*.pyc
+.env
+.env.local
+media
+.venv
+.mypy_cache
+.pytest_cache
+.ruff_cache
