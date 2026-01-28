@@ -87,7 +87,7 @@ export default function LoginPage() {
             <Brain className="w-10 h-10 text-white" />
           </motion.div>
           <h1 className="text-2xl font-bold text-foreground">
-            Cognitive State Protocol
+            Simul
           </h1>
           <p className="text-muted-foreground mt-2">
             Reduce meeting time waste through AI-powered reasoning capture

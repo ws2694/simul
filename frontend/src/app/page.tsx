@@ -70,6 +70,7 @@ function StatCard({
   icon: Icon,
   iconBg,
   iconColor,
+  accentColor,
   value,
   suffix = '',
   label,
@@ -79,6 +80,7 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
   iconBg: string;
   iconColor: string;
+  accentColor?: string;
   value: number;
   suffix?: string;
   label: string;
@@ -91,10 +93,10 @@ function StatCard({
       custom={delay}
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
     >
-      <Card className="overflow-hidden card-hover">
+      <Card className={`overflow-hidden card-hover ${accentColor || 'border-t-2 border-t-primary-400'}`}>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${iconBg}`}>
+            <div className={`p-3 rounded-xl bg-gradient-to-br ${iconBg}`}>
               <Icon className={`h-6 w-6 ${iconColor}`} />
             </div>
             <div className="flex-1 min-w-0">
@@ -354,16 +356,18 @@ function DashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={Brain}
-            iconBg="bg-primary-100"
+            iconBg="from-primary-100 to-primary-50"
             iconColor="text-primary-600"
+            accentColor="border-t-2 border-t-primary-400"
             value={stats.total_decisions}
             label="Total Decisions"
             delay={0}
           />
           <StatCard
             icon={TrendingUp}
-            iconBg="bg-success-100"
+            iconBg="from-success-100 to-success-50"
             iconColor="text-success-600"
+            accentColor="border-t-2 border-t-success-400"
             value={stats.decisions_this_week}
             label="This Week"
             trend={stats.decisions_this_week > 0 ? { value: 12, positive: true } : undefined}
@@ -371,8 +375,9 @@ function DashboardContent() {
           />
           <StatCard
             icon={Brain}
-            iconBg="bg-warning-100"
+            iconBg="from-warning-100 to-warning-50"
             iconColor="text-warning-600"
+            accentColor="border-t-2 border-t-warning-400"
             value={Math.round(stats.avg_confidence * 100)}
             suffix="%"
             label="Avg Confidence"
@@ -380,8 +385,9 @@ function DashboardContent() {
           />
           <StatCard
             icon={Users}
-            iconBg="bg-purple-100"
+            iconBg="from-purple-100 to-purple-50"
             iconColor="text-purple-600"
+            accentColor="border-t-2 border-t-purple-400"
             value={teams.length}
             label="Teams"
             delay={3}

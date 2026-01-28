@@ -80,9 +80,9 @@ export function Sidebar({ teams, isCollapsed, onToggleCollapse }: SidebarProps) 
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-border">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-border bg-gradient-to-b from-card to-transparent">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-sm">
             <Brain className="h-5 w-5" />
           </div>
           <AnimatePresence>
@@ -91,9 +91,9 @@ export function Sidebar({ teams, isCollapsed, onToggleCollapse }: SidebarProps) 
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
-                className="font-semibold text-foreground whitespace-nowrap overflow-hidden"
+                className="font-heading font-semibold text-foreground whitespace-nowrap overflow-hidden"
               >
-                CSP
+                Simul
               </motion.span>
             )}
           </AnimatePresence>

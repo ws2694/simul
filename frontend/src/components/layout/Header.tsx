@@ -45,8 +45,8 @@ export function Header({
           variant="outline"
           onClick={onOpenCommandPalette}
           className={cn(
-            'w-full justify-start text-muted-foreground font-normal h-10',
-            'bg-muted/50 border-transparent hover:bg-muted hover:border-border'
+            'w-full justify-start text-muted-foreground font-normal h-10 rounded-lg',
+            'bg-muted/50 border-transparent hover:bg-muted hover:border-primary-200'
           )}
         >
           <Search className="mr-2 h-4 w-4" />

@@ -155,7 +155,7 @@ export function BotQuery({ mode, targetId, targetName }: BotQueryProps) {
   };
 
   const getTitle = () => {
-    if (mode === 'personal') return 'Query Your Cognitive State';
+    if (mode === 'personal') return 'Query Your Knowledge';
     if (mode === 'user') return `Query ${targetName}'s Bot`;
     return 'Query Team Knowledge';
   };
