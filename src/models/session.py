@@ -37,7 +37,11 @@ class CodingSession(Base):
     # Media files
     audio_file_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     video_file_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    document_file_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     transcript: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Source content type: "audio", "video", or "document"
+    source_content_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # Duration in seconds
     duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

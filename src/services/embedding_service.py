@@ -13,7 +13,7 @@ class EmbeddingService:
 
     def __init__(self):
         self.client = genai.Client(api_key=settings.gemini_api_key)
-        self.model = "text-embedding-004"
+        self.model = "gemini-embedding-001"
         self.dimensions = 768
 
     async def generate_embedding(self, text: str) -> list[float]:

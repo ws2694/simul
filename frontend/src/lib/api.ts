@@ -215,4 +215,78 @@ export const getTeamActivity = async (teamId: number, days = 7) => {
   return response.data;
 };
 
+// Video & Document Upload
+export const uploadVideoSession = async (
+  video: File,
+  title: string,
+  sessionType: string = 'coding',
+  gitBranch?: string
+) => {
+  const formData = new FormData();
+  formData.append('video', video);
+  formData.append('title', title);
+  formData.append('session_type', sessionType);
+  if (gitBranch) formData.append('git_branch', gitBranch);
+
+  const response = await api.post('/sessions/upload-video', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 300000, // 5 min for large videos
+  });
+  return response.data;
+};
+
+export const uploadDocumentSession = async (
+  document: File,
+  title: string,
+  sessionType: string = 'design',
+  gitBranch?: string
+) => {
+  const formData = new FormData();
+  formData.append('document', document);
+  formData.append('title', title);
+  formData.append('session_type', sessionType);
+  if (gitBranch) formData.append('git_branch', gitBranch);
+
+  const response = await api.post('/sessions/upload-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+// Google OAuth & Drive
+export const getGoogleAuthUrl = async () => {
+  const response = await api.get('/google/connect');
+  return response.data;
+};
+
+export const getGoogleAuthStatus = async () => {
+  const response = await api.get('/google/status');
+  return response.data;
+};
+
+export const disconnectGoogle = async () => {
+  const response = await api.delete('/google/disconnect');
+  return response.data;
+};
+
+export const listGoogleDriveFiles = async (query?: string) => {
+  const response = await api.get('/google/drive/files', { params: query ? { query } : {} });
+  return response.data;
+};
+
+export const importGoogleDoc = async (
+  docId: string,
+  title: string,
+  sessionType: string = 'design',
+  gitBranch?: string
+) => {
+  const response = await api.post('/google/docs/import', {
+    doc_id: docId,
+    title,
+    session_type: sessionType,
+    git_branch: gitBranch,
+  });
+  return response.data;
+};
+
 export default api;

@@ -40,7 +40,15 @@ class Settings(BaseSettings):
 
     # Processing
     max_audio_duration_seconds: int = 7200  # 2 hours
+    max_video_size_mb: int = 500
+    max_document_size_mb: int = 50
+    max_video_duration_seconds: int = 7200  # 2 hours
     chunk_size_mb: int = 20
+
+    # Google OAuth (for Google Docs integration)
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

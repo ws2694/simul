@@ -5,8 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import CurrentUser, DbSession
+from src.config import get_settings
 from src.models import CodingSession, SessionType
 from src.services.audio_processor import get_audio_processor
+from src.services.media_processor import get_media_processor
 from src.services.storage_service import get_storage_service
 
 router = APIRouter()
@@ -27,6 +29,9 @@ class SessionResponse(BaseModel):
     processing_status: str
     duration_seconds: int | None
     audio_file_path: str | None
+    video_file_path: str | None
+    document_file_path: str | None
+    source_content_type: str | None
     git_branch: str | None
     open_questions: list
     technologies_mentioned: list
@@ -44,6 +49,9 @@ class SessionResponse(BaseModel):
             processing_status=obj.processing_status,
             duration_seconds=obj.duration_seconds,
             audio_file_path=obj.audio_file_path,
+            video_file_path=obj.video_file_path,
+            document_file_path=obj.document_file_path,
+            source_content_type=obj.source_content_type,
             git_branch=obj.git_branch,
             open_questions=obj.open_questions,
             technologies_mentioned=obj.technologies_mentioned,
@@ -140,6 +148,147 @@ async def upload_session_audio(
     return SessionResponse.from_orm_with_dates(session)
 
 
+@router.post("/upload-video", response_model=SessionResponse)
+async def upload_session_video(
+    current_user: CurrentUser,
+    db: DbSession,
+    background_tasks: BackgroundTasks,
+    video: UploadFile = File(...),
+    title: str = Form(...),
+    session_type: SessionType = Form(SessionType.CODING),
+    git_branch: str | None = Form(None),
+) -> SessionResponse:
+    """Upload a video and create a new session with automatic processing."""
+    settings = get_settings()
+
+    # Validate file type
+    allowed_types = [
+        "video/mp4", "video/webm", "video/quicktime",
+        "video/x-msvideo", "video/mpeg",
+    ]
+    content_type = video.content_type.split(";")[0] if video.content_type else ""
+    if content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid video type. Allowed: {allowed_types}",
+        )
+
+    # Read and validate file size
+    video_data = await video.read()
+    max_bytes = settings.max_video_size_mb * 1024 * 1024
+    if len(video_data) > max_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Video too large. Maximum size: {settings.max_video_size_mb}MB",
+        )
+
+    # Save file
+    storage = get_storage_service()
+    ext = video.filename.split(".")[-1] if video.filename else "mp4"
+    filename = f"video_{title.replace(' ', '_')[:50]}.{ext}"
+    file_path = await storage.save_file(video_data, filename, current_user.id)
+
+    # Create session
+    session = CodingSession(
+        title=title,
+        session_type=session_type,
+        video_file_path=file_path,
+        source_content_type="video",
+        git_branch=git_branch,
+        owner_id=current_user.id,
+        processing_status="pending",
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    # Schedule background processing
+    async def process_session():
+        from src.db import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as process_db:
+            processor = get_media_processor()
+            try:
+                await processor.process_session(process_db, session.id, current_user.id)
+            except Exception:
+                pass
+
+    background_tasks.add_task(process_session)
+
+    return SessionResponse.from_orm_with_dates(session)
+
+
+@router.post("/upload-document", response_model=SessionResponse)
+async def upload_session_document(
+    current_user: CurrentUser,
+    db: DbSession,
+    background_tasks: BackgroundTasks,
+    document: UploadFile = File(...),
+    title: str = Form(...),
+    session_type: SessionType = Form(SessionType.DESIGN),
+    git_branch: str | None = Form(None),
+) -> SessionResponse:
+    """Upload a document and create a new session with automatic processing."""
+    settings = get_settings()
+
+    # Validate file type
+    allowed_types = [
+        "application/pdf",
+        "text/plain",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]
+    content_type = document.content_type.split(";")[0] if document.content_type else ""
+    if content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid document type. Allowed: PDF, TXT, DOCX",
+        )
+
+    # Read and validate file size
+    doc_data = await document.read()
+    max_bytes = settings.max_document_size_mb * 1024 * 1024
+    if len(doc_data) > max_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Document too large. Maximum size: {settings.max_document_size_mb}MB",
+        )
+
+    # Save file
+    storage = get_storage_service()
+    ext = document.filename.split(".")[-1] if document.filename else "pdf"
+    filename = f"doc_{title.replace(' ', '_')[:50]}.{ext}"
+    file_path = await storage.save_file(doc_data, filename, current_user.id)
+
+    # Create session
+    session = CodingSession(
+        title=title,
+        session_type=session_type,
+        document_file_path=file_path,
+        source_content_type="document",
+        git_branch=git_branch,
+        owner_id=current_user.id,
+        processing_status="pending",
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    # Schedule background processing
+    async def process_session():
+        from src.db import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as process_db:
+            processor = get_media_processor()
+            try:
+                await processor.process_session(process_db, session.id, current_user.id)
+            except Exception:
+                pass
+
+    background_tasks.add_task(process_session)
+
+    return SessionResponse.from_orm_with_dates(session)
+
+
 @router.get("/", response_model=SessionListResponse)
 async def list_sessions(
     current_user: CurrentUser,
@@ -208,19 +357,22 @@ async def reprocess_session(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    if not session.audio_file_path:
-        raise HTTPException(status_code=400, detail="Session has no audio file")
+    if not (session.audio_file_path or session.video_file_path or session.document_file_path):
+        raise HTTPException(status_code=400, detail="Session has no media file")
 
     session.processing_status = "pending"
     await db.commit()
 
-    # Schedule background processing
+    # Schedule background processing using unified MediaProcessor
     async def process_session():
         from src.db import AsyncSessionLocal
 
         async with AsyncSessionLocal() as process_db:
-            processor = get_audio_processor()
-            await processor.process_session(process_db, session_id, current_user.id)
+            processor = get_media_processor()
+            try:
+                await processor.process_session(process_db, session_id, current_user.id)
+            except Exception:
+                pass
 
     background_tasks.add_task(process_session)
 

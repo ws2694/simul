@@ -10,6 +10,7 @@ from src.models import Decision, CodingSession, DecisionStatus, VisibilityLevel
 from src.services.gemini_client import get_gemini_client
 from src.services.embedding_service import get_embedding_service
 from src.services.storage_service import get_storage_service
+from src.services.extraction_prompts import EXTRACTION_SCHEMA, AUDIO_EXTRACTION_PROMPT
 
 logger = structlog.get_logger()
 
@@ -34,96 +35,6 @@ class SessionExtraction(BaseModel):
     decisions: list[ExtractedDecision]
     open_questions: list[str]
     technologies_mentioned: list[str]
-
-
-# JSON schema for Gemini structured output
-EXTRACTION_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "summary": {"type": "string", "description": "Brief summary of the session"},
-        "decisions": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "decision": {
-                        "type": "string",
-                        "description": "The decision made, stated clearly",
-                    },
-                    "reasoning": {
-                        "type": "string",
-                        "description": "Why this decision was made",
-                    },
-                    "alternatives_considered": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Other options that were considered",
-                    },
-                    "confidence": {
-                        "type": "number",
-                        "description": "How confident the speaker sounded (0.0-1.0)",
-                    },
-                    "timestamp_start": {
-                        "type": "number",
-                        "description": "Start time in seconds",
-                    },
-                    "timestamp_end": {
-                        "type": "number",
-                        "description": "End time in seconds",
-                    },
-                    "domain": {
-                        "type": "string",
-                        "description": "Category: architecture, infrastructure, security, performance, etc.",
-                    },
-                    "tags": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Relevant tags/keywords",
-                    },
-                },
-                "required": [
-                    "decision",
-                    "reasoning",
-                    "confidence",
-                    "timestamp_start",
-                    "timestamp_end",
-                    "domain",
-                ],
-            },
-        },
-        "open_questions": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Unresolved questions or uncertainties expressed",
-        },
-        "technologies_mentioned": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Technologies, frameworks, tools mentioned",
-        },
-    },
-    "required": ["summary", "decisions", "open_questions", "technologies_mentioned"],
-}
-
-
-EXTRACTION_PROMPT = """Analyze this coding/working session audio recording. Your task is to extract all technical decisions, reasoning, and context.
-
-For each decision you identify:
-1. State the decision clearly and concisely
-2. Capture the full reasoning - WHY was this decision made?
-3. List any alternatives that were considered and rejected
-4. Rate confidence based on the speaker's tone and certainty (0.0 = very uncertain, 1.0 = very confident)
-5. Provide accurate timestamps (in seconds) for when the decision was discussed
-6. Classify the domain (architecture, infrastructure, security, performance, database, api, frontend, testing, devops, etc.)
-7. Add relevant tags for searchability
-
-Also extract:
-- Open questions or uncertainties the speaker expressed
-- Technologies, frameworks, libraries, and tools mentioned
-
-Focus on capturing the REASONING and CONTEXT, not just the decisions themselves. The goal is to make this knowledge queryable later.
-
-Be thorough - even small decisions can be important for understanding the codebase later."""
 
 
 class AudioProcessor:
@@ -179,7 +90,7 @@ class AudioProcessor:
             response = await self.gemini.generate_with_audio(
                 audio_uri=audio_uri,
                 mime_type=mime_type,
-                prompt=EXTRACTION_PROMPT,
+                prompt=AUDIO_EXTRACTION_PROMPT,
                 response_schema=EXTRACTION_SCHEMA,
                 thinking_level="high",
             )
