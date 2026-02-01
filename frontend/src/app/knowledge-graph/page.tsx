@@ -11,6 +11,8 @@ import {
   Tag,
   Calendar,
   Brain,
+  Users,
+  User,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -36,7 +38,7 @@ import {
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { listDecisions, getDomains } from '@/lib/api';
+import { listDecisions, getDomains, listTeams, getTeamDecisions, type TeamDecision } from '@/lib/api';
 
 // --- Types ---
 
@@ -134,10 +136,12 @@ function DecisionBubble({
   decision,
   index,
   onClick,
+  showOwner = false,
 }: {
   decision: Decision;
   index: number;
   onClick: () => void;
+  showOwner?: boolean;
 }) {
   const size = getBubbleSize(decision.confidence);
   const statusColor = STATUS_COLORS[decision.status] || STATUS_COLORS.DRAFT;
@@ -179,6 +183,12 @@ function DecisionBubble({
         <p className="text-xs opacity-80 mt-0.5">
           {Math.round(decision.confidence * 100)}% confidence &middot; {STATUS_LABELS[decision.status] || decision.status}
         </p>
+        {showOwner && decision.owner_name && (
+          <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
+            <User className="h-3 w-3" />
+            {decision.owner_name}
+          </p>
+        )}
       </TooltipContent>
     </Tooltip>
   );
@@ -192,12 +202,14 @@ function DomainCluster({
   index,
   onBubbleClick,
   onDomainFilter,
+  showOwner = false,
 }: {
   domain: string;
   decisions: Decision[];
   index: number;
   onBubbleClick: (decision: Decision) => void;
   onDomainFilter: (domain: string) => void;
+  showOwner?: boolean;
 }) {
   const colors = getDomainColor(domain);
   const avgConfidence = decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length;
@@ -256,6 +268,7 @@ function DomainCluster({
             decision={decision}
             index={i}
             onClick={() => onBubbleClick(decision)}
+            showOwner={showOwner}
           />
         ))}
       </div>
@@ -284,7 +297,7 @@ function DomainCluster({
 
 // --- Detail Panel ---
 
-function DecisionDetailPanel({ decision }: { decision: Decision }) {
+function DecisionDetailPanel({ decision, showOwner = false }: { decision: Decision; showOwner?: boolean }) {
   return (
     <div className="space-y-5">
       {/* Title & badges */}
@@ -300,6 +313,12 @@ function DecisionDetailPanel({ decision }: { decision: Decision }) {
             {STATUS_LABELS[decision.status] || decision.status}
           </span>
           <Badge variant="outline">{decision.domain}</Badge>
+          {showOwner && decision.owner_name && (
+            <Badge variant="secondary" className="gap-1">
+              <User className="h-3 w-3" />
+              {decision.owner_name}
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -433,27 +452,58 @@ function KnowledgeClustersContent() {
   const [detailDecision, setDetailDecision] = useState<Decision | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  // Load data
+  // Team mode state
+  const [viewMode, setViewMode] = useState<'personal' | 'team'>('personal');
+  const [teams, setTeams] = useState<Array<{ id: number; name: string }>>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
+
+  // Load teams on mount
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const teamsData = await listTeams();
+        setTeams(teamsData);
+        if (teamsData.length > 0) {
+          setSelectedTeamId(teamsData[0].id);
+        }
+      } catch (error) {
+        console.error('Failed to load teams:', error);
+      }
+    };
+    loadTeams();
+  }, []);
+
+  // Load data based on view mode
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [decisionsRes, domainsRes] = await Promise.all([
-          listDecisions({ limit: 200 }),
-          getDomains(),
-        ]);
+        if (viewMode === 'personal') {
+          const [decisionsRes, domainsRes] = await Promise.all([
+            listDecisions({ limit: 200 }),
+            getDomains(),
+          ]);
 
-        // listDecisions may return { items: [...] } or an array directly
-        const decisionList: Decision[] = Array.isArray(decisionsRes)
-          ? decisionsRes
-          : decisionsRes?.items ?? decisionsRes?.decisions ?? [];
+          const decisionList: Decision[] = Array.isArray(decisionsRes)
+            ? decisionsRes
+            : decisionsRes?.items ?? decisionsRes?.decisions ?? [];
 
-        const domainList: string[] = Array.isArray(domainsRes)
-          ? domainsRes
-          : domainsRes?.domains ?? [];
+          const domainList: string[] = Array.isArray(domainsRes)
+            ? domainsRes
+            : domainsRes?.domains ?? [];
 
-        setDecisions(decisionList);
-        setDomains(domainList);
+          setDecisions(decisionList);
+          setDomains(domainList);
+        } else if (selectedTeamId) {
+          const teamData = await getTeamDecisions(selectedTeamId, { limit: 200 });
+          // Map team decisions to the Decision interface
+          const decisionList: Decision[] = teamData.decisions.map((d: TeamDecision) => ({
+            ...d,
+            status: d.status,
+          }));
+          setDecisions(decisionList);
+          setDomains(teamData.domains);
+        }
       } catch (error) {
         toast.error('Failed to load decisions');
       } finally {
@@ -461,7 +511,7 @@ function KnowledgeClustersContent() {
       }
     };
     load();
-  }, []);
+  }, [viewMode, selectedTeamId]);
 
   // Filter decisions
   const filteredDecisions = useMemo(() => {
@@ -543,20 +593,68 @@ function KnowledgeClustersContent() {
             </div>
           </div>
 
-          {/* Stats badges */}
-          {stats.total > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="gap-1 tabular-nums">
-                {stats.total} decision{stats.total !== 1 ? 's' : ''}
-              </Badge>
-              <Badge variant="secondary" className="gap-1 tabular-nums">
-                {stats.domainCount} domain{stats.domainCount !== 1 ? 's' : ''}
-              </Badge>
-              <Badge variant="secondary" className="gap-1 tabular-nums">
-                {Math.round(stats.avgConfidence * 100)}% avg confidence
-              </Badge>
+          {/* View mode toggle and stats */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* View mode toggle */}
+            <div className="flex items-center rounded-lg bg-muted p-1">
+              <button
+                onClick={() => setViewMode('personal')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  viewMode === 'personal'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <User className="h-3.5 w-3.5" />
+                Personal
+              </button>
+              <button
+                onClick={() => setViewMode('team')}
+                disabled={teams.length === 0}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  viewMode === 'team'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                  teams.length === 0 && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Team
+              </button>
             </div>
-          )}
+
+            {/* Team selector (when in team mode) */}
+            {viewMode === 'team' && teams.length > 0 && (
+              <select
+                value={selectedTeamId || ''}
+                onChange={(e) => setSelectedTeamId(Number(e.target.value))}
+                className="px-3 py-1.5 rounded-md border bg-background text-sm"
+              >
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Stats badges */}
+            {stats.total > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="secondary" className="gap-1 tabular-nums">
+                  {stats.total} decision{stats.total !== 1 ? 's' : ''}
+                </Badge>
+                <Badge variant="secondary" className="gap-1 tabular-nums">
+                  {stats.domainCount} domain{stats.domainCount !== 1 ? 's' : ''}
+                </Badge>
+                <Badge variant="secondary" className="gap-1 tabular-nums">
+                  {Math.round(stats.avgConfidence * 100)}% avg confidence
+                </Badge>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -672,6 +770,7 @@ function KnowledgeClustersContent() {
                   index={i}
                   onBubbleClick={handleBubbleClick}
                   onDomainFilter={handleDomainFilter}
+                  showOwner={viewMode === 'team'}
                 />
               ))}
             </AnimatePresence>
@@ -722,7 +821,7 @@ function KnowledgeClustersContent() {
             </SheetDescription>
           </SheetHeader>
           <div className="mt-6">
-            {detailDecision && <DecisionDetailPanel decision={detailDecision} />}
+            {detailDecision && <DecisionDetailPanel decision={detailDecision} showOwner={viewMode === 'team'} />}
           </div>
         </SheetContent>
       </Sheet>

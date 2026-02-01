@@ -10,13 +10,21 @@ import {
   AlertTriangle,
   Activity,
   Circle,
+  Bot,
+  MessageSquare,
+  CheckCircle2,
+  Clock,
+  Plus,
+  UserPlus,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
-import { getTeamMembers, getTeamActivity } from '@/lib/api';
+import { getTeamMembers, getTeamActivity, listMeetings, type Meeting } from '@/lib/api';
 import { AppShell } from '@/components/layout';
 import { BotQuery } from '@/components/BotQuery';
 import { ConflictDetector } from '@/components/ConflictDetector';
-import { formatRelativeTime } from '@/lib/utils';
+import { StartMeetingDialog } from '@/components/meetings';
+import { AddMemberDialog } from '@/components/teams';
+import { formatRelativeTime, cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,8 +42,11 @@ function TeamPageContent() {
 
   const [members, setMembers] = useState<any[]>([]);
   const [activity, setActivity] = useState<any>(null);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'query' | 'conflicts' | 'activity'>('query');
+  const [activeTab, setActiveTab] = useState<'query' | 'conflicts' | 'activity' | 'meetings'>('query');
+  const [showMeetingDialog, setShowMeetingDialog] = useState(false);
+  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -45,12 +56,14 @@ function TeamPageContent() {
 
     const loadTeamData = async () => {
       try {
-        const [membersData, activityData] = await Promise.all([
+        const [membersData, activityData, meetingsData] = await Promise.all([
           getTeamMembers(teamId),
           getTeamActivity(teamId, 7),
+          listMeetings(teamId),
         ]);
         setMembers(membersData);
         setActivity(activityData);
+        setMeetings(meetingsData);
       } catch (err) {
         console.error('Failed to load team data:', err);
       } finally {
@@ -60,6 +73,15 @@ function TeamPageContent() {
 
     loadTeamData();
   }, [token, teamId, router]);
+
+  const reloadMembers = async () => {
+    try {
+      const membersData = await getTeamMembers(teamId);
+      setMembers(membersData);
+    } catch (err) {
+      console.error('Failed to reload members:', err);
+    }
+  };
 
   if (!token) return null;
 
@@ -71,25 +93,31 @@ function TeamPageContent() {
       className="space-y-6"
     >
       {/* Header */}
-      <motion.div variants={fadeInVariants} className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push('/')}
-          className="shrink-0"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Team Dashboard</h1>
-          <p className="text-muted-foreground">
-            {isLoading ? (
-              <Skeleton className="h-4 w-24 mt-1" />
-            ) : (
-              `${members.length} members`
-            )}
-          </p>
+      <motion.div variants={fadeInVariants} className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push('/')}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Team Dashboard</h1>
+            <p className="text-muted-foreground">
+              {isLoading ? (
+                <Skeleton className="h-4 w-24 mt-1" />
+              ) : (
+                `${members.length} members`
+              )}
+            </p>
+          </div>
         </div>
+        <Button onClick={() => setShowMeetingDialog(true)} className="gap-2">
+          <Bot className="h-4 w-4" />
+          Start Bot Meeting
+        </Button>
       </motion.div>
 
       {/* Main Grid */}
@@ -98,9 +126,20 @@ function TeamPageContent() {
         <motion.div variants={fadeInVariants} className="lg:col-span-1">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Team Members
+              <CardTitle className="text-base font-semibold flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Team Members
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setShowAddMemberDialog(true)}
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Add
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
@@ -173,10 +212,19 @@ function TeamPageContent() {
         <motion.div variants={fadeInVariants} className="lg:col-span-3 space-y-6">
           {/* Tabs with proper TabsContent */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
-            <TabsList className="grid w-full max-w-lg grid-cols-3">
+            <TabsList className="grid w-full max-w-2xl grid-cols-4">
               <TabsTrigger value="query" className="gap-2">
                 <Search className="h-4 w-4" />
                 Team Query
+              </TabsTrigger>
+              <TabsTrigger value="meetings" className="gap-2">
+                <Bot className="h-4 w-4" />
+                Meetings
+                {meetings.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {meetings.length}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger value="conflicts" className="gap-2">
                 <AlertTriangle className="h-4 w-4" />
@@ -190,6 +238,98 @@ function TeamPageContent() {
 
             <TabsContent value="query" className="mt-6">
               <BotQuery mode="team" targetId={teamId} targetName="Team" />
+            </TabsContent>
+
+            <TabsContent value="meetings" className="mt-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Bot className="h-4 w-4" />
+                    Bot Meetings
+                  </CardTitle>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowMeetingDialog(true)}
+                    className="gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    New Meeting
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {meetings.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                        <Bot className="w-8 h-8 text-muted-foreground opacity-50" />
+                      </div>
+                      <p className="text-muted-foreground mb-2">
+                        No bot meetings yet
+                      </p>
+                      <p className="text-sm text-muted-foreground/70 mb-4">
+                        Start a meeting to have bots discuss decisions and reach consensus
+                      </p>
+                      <Button onClick={() => setShowMeetingDialog(true)} className="gap-2">
+                        <Bot className="h-4 w-4" />
+                        Start First Meeting
+                      </Button>
+                    </div>
+                  ) : (
+                    <motion.div
+                      variants={staggerContainerVariants}
+                      initial="initial"
+                      animate="animate"
+                      className="space-y-3"
+                    >
+                      {meetings.map((meeting, i) => {
+                        const statusConfig = {
+                          scheduled: { icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted' },
+                          in_progress: { icon: MessageSquare, color: 'text-primary-600', bg: 'bg-primary-100' },
+                          completed: { icon: CheckCircle2, color: 'text-success-600', bg: 'bg-success-100' },
+                          cancelled: { icon: AlertTriangle, color: 'text-error-600', bg: 'bg-error-100' },
+                        };
+                        const config = statusConfig[meeting.status];
+                        const StatusIcon = config.icon;
+
+                        return (
+                          <motion.div
+                            key={meeting.id}
+                            variants={staggerItemVariants}
+                            custom={i}
+                          >
+                            <Link href={`/meeting/${meeting.id}`}>
+                              <div className="flex items-center gap-4 p-4 rounded-xl border hover:border-primary-200 hover:bg-muted/30 transition-all cursor-pointer">
+                                <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center', config.bg)}>
+                                  <StatusIcon className={cn('h-5 w-5', config.color)} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{meeting.title}</p>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span>{meeting.participant_count} participants</span>
+                                    <span>·</span>
+                                    <span>{meeting.message_count} messages</span>
+                                    <span>·</span>
+                                    <span>{formatRelativeTime(meeting.created_at)}</span>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    'capitalize',
+                                    meeting.status === 'completed' && 'bg-success-50 text-success-700 border-success-200',
+                                    meeting.status === 'in_progress' && 'bg-primary-50 text-primary-700 border-primary-200'
+                                  )}
+                                >
+                                  {meeting.status.replace('_', ' ')}
+                                </Badge>
+                              </div>
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="conflicts" className="mt-6">
@@ -303,6 +443,23 @@ function TeamPageContent() {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Start Meeting Dialog */}
+      <StartMeetingDialog
+        open={showMeetingDialog}
+        onOpenChange={setShowMeetingDialog}
+        teamId={teamId}
+        members={members}
+      />
+
+      {/* Add Member Dialog */}
+      <AddMemberDialog
+        open={showAddMemberDialog}
+        onOpenChange={setShowAddMemberDialog}
+        teamId={teamId}
+        existingMemberIds={members.map((m) => m.user_id)}
+        onMemberAdded={reloadMembers}
+      />
     </motion.div>
   );
 }

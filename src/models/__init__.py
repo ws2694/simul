@@ -6,6 +6,13 @@ from src.models.session import CodingSession, SessionType
 from src.models.team import Team, TeamMembership, TeamRole
 from src.models.query_log import QueryLog
 from src.models.google_auth import GoogleOAuthToken
+from src.models.bot_meeting import (
+    BotMeeting,
+    BotMeetingParticipant,
+    BotMeetingMessage,
+    MeetingStatus,
+    MessageRole,
+)
 
 __all__ = [
     "Base",
@@ -20,4 +27,9 @@ __all__ = [
     "TeamRole",
     "QueryLog",
     "GoogleOAuthToken",
+    "BotMeeting",
+    "BotMeetingParticipant",
+    "BotMeetingMessage",
+    "MeetingStatus",
+    "MessageRole",
 ]

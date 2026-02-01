@@ -8,6 +8,7 @@ from src.api.decisions import router as decisions_router
 from src.api.bot import router as bot_router
 from src.api.team import router as team_router
 from src.api.google_auth import router as google_auth_router
+from src.api.meeting import router as meeting_router
 
 api_router = APIRouter()
 
@@ -18,3 +19,4 @@ api_router.include_router(decisions_router, prefix="/decisions", tags=["decision
 api_router.include_router(bot_router, prefix="/bot", tags=["bot"])
 api_router.include_router(team_router, prefix="/team", tags=["team"])
 api_router.include_router(google_auth_router, prefix="/google", tags=["google"])
+api_router.include_router(meeting_router, prefix="/meetings", tags=["meetings"])

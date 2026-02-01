@@ -165,6 +165,19 @@ export const getDomainSummaries = async () => {
   return response.data;
 };
 
+// Users
+export interface UserSearchResult {
+  id: number;
+  email: string;
+  full_name: string;
+}
+
+export const searchUsers = async (query: string, limit = 10): Promise<UserSearchResult[]> => {
+  if (!query || query.length < 2) return [];
+  const response = await api.get('/users/search/', { params: { q: query, limit } });
+  return response.data;
+};
+
 // Team
 export const listTeams = async () => {
   const response = await api.get('/team/');
@@ -212,6 +225,28 @@ export const checkAlignment = async (
 
 export const getTeamActivity = async (teamId: number, days = 7) => {
   const response = await api.get(`/team/${teamId}/activity`, { params: { days } });
+  return response.data;
+};
+
+export interface TeamDecision {
+  id: number;
+  title: string;
+  decision_text: string;
+  reasoning: string;
+  confidence: number;
+  domain: string;
+  tags: string[];
+  status: string;
+  owner_id: number;
+  owner_name: string;
+  created_at: string;
+}
+
+export const getTeamDecisions = async (
+  teamId: number,
+  params?: { skip?: number; limit?: number; domain?: string }
+): Promise<{ decisions: TeamDecision[]; domains: string[]; total: number }> => {
+  const response = await api.get(`/team/${teamId}/decisions`, { params });
   return response.data;
 };
 
@@ -287,6 +322,95 @@ export const importGoogleDoc = async (
     git_branch: gitBranch,
   });
   return response.data;
+};
+
+// Bot Meetings
+export interface MeetingParticipant {
+  user_id: number;
+  full_name: string;
+  joined_at: string;
+  is_bot_active: boolean;
+}
+
+export interface MeetingMessage {
+  id: number;
+  role: 'bot' | 'facilitator' | 'system';
+  speaker_name: string;
+  speaker_user_id: number | null;
+  content: string;
+  cited_decisions: number[] | null;
+  sequence: number;
+  created_at: string;
+}
+
+export interface Meeting {
+  id: number;
+  title: string;
+  topic: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  initiator_name: string;
+  participant_count: number;
+  message_count: number;
+  created_at: string;
+  started_at: string | null;
+  ended_at: string | null;
+}
+
+export interface MeetingDetail extends Meeting {
+  description: string | null;
+  team_id: number;
+  initiator_id: number;
+  summary: string | null;
+  consensus_reached: boolean | null;
+  action_items: Array<{ action: string; owner?: string }> | null;
+  participants: MeetingParticipant[];
+  messages: MeetingMessage[];
+}
+
+export const createMeeting = async (data: {
+  title: string;
+  topic: string;
+  description?: string;
+  team_id: number;
+  participant_ids: number[];
+}) => {
+  const response = await api.post('/meetings/', data);
+  return response.data as Meeting;
+};
+
+export const listMeetings = async (teamId?: number) => {
+  const response = await api.get('/meetings/', {
+    params: teamId ? { team_id: teamId } : {},
+  });
+  return response.data as Meeting[];
+};
+
+export const getMeeting = async (meetingId: number) => {
+  const response = await api.get(`/meetings/${meetingId}`);
+  return response.data as MeetingDetail;
+};
+
+export const startMeeting = async (meetingId: number) => {
+  const response = await api.post(`/meetings/${meetingId}/start`);
+  return response.data as MeetingDetail;
+};
+
+export const runMeetingDiscussion = async (meetingId: number, maxTurns = 10) => {
+  const response = await api.post(`/meetings/${meetingId}/run`, null, {
+    params: { max_turns: maxTurns },
+    timeout: 180000, // 3 min for long discussions
+  });
+  return response.data as MeetingDetail;
+};
+
+export const endMeeting = async (meetingId: number) => {
+  const response = await api.post(`/meetings/${meetingId}/end`);
+  return response.data as MeetingDetail;
+};
+
+export const getMeetingMessages = async (meetingId: number) => {
+  const response = await api.get(`/meetings/${meetingId}/messages`);
+  return response.data as MeetingMessage[];
 };
 
 export default api;

@@ -24,6 +24,7 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { VideoUploader } from '@/components/VideoUploader';
 import { GoogleDocsImporter } from '@/components/GoogleDocsImporter';
 import { BotQuery } from '@/components/BotQuery';
+import { CreateTeamDialog } from '@/components/teams';
 import { formatConfidence, formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -305,6 +306,16 @@ function DashboardContent() {
     startTracking(session.id);
   }, [startTracking]);
 
+  // Handle team created callback
+  const handleTeamCreated = useCallback(async () => {
+    try {
+      const teamsData = await listTeams();
+      setTeams(teamsData);
+    } catch (err) {
+      console.error('Failed to refresh teams:', err);
+    }
+  }, []);
+
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -520,16 +531,25 @@ function DashboardContent() {
           )}
 
           {/* Teams */}
-          {teams.length > 0 && (
-            <motion.div variants={fadeInVariants}>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold">
-                    Your Teams
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-2">
-                  {teams.map((team, i) => (
+          <motion.div variants={fadeInVariants}>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold flex items-center justify-between">
+                  Your Teams
+                  <CreateTeamDialog
+                    onTeamCreated={handleTeamCreated}
+                    trigger={
+                      <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        New
+                      </Button>
+                    }
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                {teams.length > 0 ? (
+                  teams.map((team, i) => (
                     <motion.div
                       key={team.id}
                       variants={staggerItemVariants}
@@ -550,11 +570,27 @@ function DashboardContent() {
                         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
                       </Link>
                     </motion.div>
-                  ))}
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Create a team to collaborate and start bot meetings
+                    </p>
+                    <CreateTeamDialog
+                      onTeamCreated={handleTeamCreated}
+                      trigger={
+                        <Button size="sm" className="gap-2">
+                          <Users className="h-4 w-4" />
+                          Create Your First Team
+                        </Button>
+                      }
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
       </div>
     </motion.div>

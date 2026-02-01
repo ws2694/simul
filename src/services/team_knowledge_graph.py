@@ -409,9 +409,6 @@ Keep the response focused and actionable."""
         requester_id: int,
     ) -> list[Decision]:
         """Search a team member's decisions (respecting visibility)."""
-        # Generate query embedding
-        query_embedding = await self.embeddings.generate_embedding(query)
-
         # Can see team-visible and public decisions
         visibility_filter = and_(
             Decision.owner_id == member_id,
@@ -423,13 +420,38 @@ Keep the response focused and actionable."""
             ),
         )
 
-        result = await db.execute(
-            select(Decision)
-            .where(visibility_filter)
-            .where(Decision.embedding.isnot(None))
-            .order_by(Decision.embedding.l2_distance(query_embedding))
-            .limit(5)
-        )
+        # Use text-based search (embeddings stored as JSONB, not pgvector)
+        query_lower = query.lower()
+        search_terms = query_lower.split()[:5]
+
+        text_conditions = []
+        for term in search_terms:
+            term_pattern = f"%{term}%"
+            text_conditions.append(
+                or_(
+                    Decision.title.ilike(term_pattern),
+                    Decision.decision_text.ilike(term_pattern),
+                    Decision.reasoning.ilike(term_pattern),
+                    Decision.domain.ilike(term_pattern),
+                )
+            )
+
+        if text_conditions:
+            search_filter = or_(*text_conditions)
+            result = await db.execute(
+                select(Decision)
+                .where(visibility_filter)
+                .where(search_filter)
+                .order_by(Decision.created_at.desc())
+                .limit(5)
+            )
+        else:
+            result = await db.execute(
+                select(Decision)
+                .where(visibility_filter)
+                .order_by(Decision.created_at.desc())
+                .limit(5)
+            )
 
         return list(result.scalars().all())
 

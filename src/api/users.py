@@ -54,6 +54,37 @@ async def update_current_user(
     return current_user
 
 
+class UserSearchResponse(BaseModel):
+    id: int
+    email: str
+    full_name: str
+
+    model_config = {"from_attributes": True}
+
+
+@router.get("/search/", response_model=list[UserSearchResponse])
+async def search_users(
+    current_user: CurrentUser,
+    db: DbSession,
+    q: str = "",
+    limit: int = 10,
+) -> list[User]:
+    """Search users by email or name. Used for adding team members."""
+    if not q or len(q) < 2:
+        return []
+
+    query = select(User).where(
+        User.is_active == True,  # noqa: E712
+        (User.email.ilike(f"%{q}%") | User.full_name.ilike(f"%{q}%")),
+    ).limit(limit)
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    # Exclude current user from results
+    return [u for u in users if u.id != current_user.id]
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
     user_id: int,

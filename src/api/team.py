@@ -367,3 +367,98 @@ async def get_team_activity(
         "by_domain": domains,
         "period_days": days,
     }
+
+
+class TeamDecisionResponse(BaseModel):
+    id: int
+    title: str
+    decision_text: str
+    reasoning: str
+    confidence: float
+    domain: str
+    tags: list[str]
+    status: str
+    owner_id: int
+    owner_name: str
+    created_at: str
+
+    model_config = {"from_attributes": True}
+
+
+@router.get("/{team_id}/decisions")
+async def get_team_decisions(
+    team_id: int,
+    current_user: CurrentUser,
+    db: DbSession,
+    skip: int = 0,
+    limit: int = 200,
+    domain: str | None = None,
+) -> dict:
+    """Get all team-visible decisions for the knowledge graph."""
+    from src.models import Decision, VisibilityLevel
+
+    # Verify user is member of team
+    membership = await db.execute(
+        select(TeamMembership)
+        .where(TeamMembership.team_id == team_id)
+        .where(TeamMembership.user_id == current_user.id)
+    )
+    if not membership.scalar_one_or_none():
+        raise HTTPException(status_code=403, detail="Not a member of this team")
+
+    # Get team member IDs
+    members_result = await db.execute(
+        select(TeamMembership.user_id).where(TeamMembership.team_id == team_id)
+    )
+    member_ids = [r[0] for r in members_result.all()]
+
+    # Build query for team-visible decisions
+    query = (
+        select(Decision)
+        .options(selectinload(Decision.owner))
+        .where(Decision.owner_id.in_(member_ids))
+        .where(
+            Decision.visibility.in_([VisibilityLevel.TEAM, VisibilityLevel.PUBLIC])
+        )
+    )
+
+    if domain:
+        query = query.where(Decision.domain == domain)
+
+    query = query.order_by(Decision.created_at.desc()).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    decisions = result.scalars().all()
+
+    # Get unique domains
+    domains_query = (
+        select(Decision.domain)
+        .where(Decision.owner_id.in_(member_ids))
+        .where(
+            Decision.visibility.in_([VisibilityLevel.TEAM, VisibilityLevel.PUBLIC])
+        )
+        .distinct()
+    )
+    domains_result = await db.execute(domains_query)
+    domains = sorted([r[0] for r in domains_result.all()])
+
+    return {
+        "decisions": [
+            {
+                "id": d.id,
+                "title": d.title,
+                "decision_text": d.decision_text,
+                "reasoning": d.reasoning,
+                "confidence": d.confidence,
+                "domain": d.domain,
+                "tags": d.tags or [],
+                "status": d.status.value if hasattr(d.status, 'value') else str(d.status),
+                "owner_id": d.owner_id,
+                "owner_name": d.owner.full_name,
+                "created_at": d.created_at.isoformat(),
+            }
+            for d in decisions
+        ],
+        "domains": domains,
+        "total": len(decisions),
+    }
