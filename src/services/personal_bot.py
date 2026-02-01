@@ -153,10 +153,7 @@ Provide a clear answer based on the captured decisions above. Include:
         include_private: bool,
         limit: int = 10,
     ) -> list[Decision]:
-        """Search decisions by semantic similarity."""
-        # Generate query embedding
-        query_embedding = await self.embeddings.generate_embedding(query)
-
+        """Search decisions by text matching (fallback when pgvector unavailable)."""
         # Build visibility filter
         if include_private:
             visibility_filter = Decision.owner_id == self.user_id
@@ -169,15 +166,42 @@ Provide a clear answer based on the captured decisions above. Include:
                 ),
             )
 
-        # Perform vector similarity search using pgvector
-        # Using L2 distance (smaller = more similar)
-        result = await db.execute(
-            select(Decision)
-            .where(visibility_filter)
-            .where(Decision.embedding.isnot(None))
-            .order_by(Decision.embedding.l2_distance(query_embedding))
-            .limit(limit)
-        )
+        # Use text-based search as fallback (pgvector not available)
+        # Search in title, decision_text, and reasoning fields
+        query_lower = query.lower()
+        search_terms = query_lower.split()
+
+        # Build text search conditions
+        text_conditions = []
+        for term in search_terms[:5]:  # Limit to first 5 terms
+            term_pattern = f"%{term}%"
+            text_conditions.append(
+                or_(
+                    Decision.title.ilike(term_pattern),
+                    Decision.decision_text.ilike(term_pattern),
+                    Decision.reasoning.ilike(term_pattern),
+                    Decision.domain.ilike(term_pattern),
+                )
+            )
+
+        # Combine conditions - match any term
+        if text_conditions:
+            search_filter = or_(*text_conditions)
+            result = await db.execute(
+                select(Decision)
+                .where(visibility_filter)
+                .where(search_filter)
+                .order_by(Decision.created_at.desc())
+                .limit(limit)
+            )
+        else:
+            # If no search terms, return most recent
+            result = await db.execute(
+                select(Decision)
+                .where(visibility_filter)
+                .order_by(Decision.created_at.desc())
+                .limit(limit)
+            )
 
         return list(result.scalars().all())
 

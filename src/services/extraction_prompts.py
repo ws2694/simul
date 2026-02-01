@@ -12,11 +12,11 @@ EXTRACTION_SCHEMA = {
                 "properties": {
                     "decision": {
                         "type": "string",
-                        "description": "The decision made, stated clearly",
+                        "description": "The decision, thought, insight, or change stated clearly",
                     },
                     "reasoning": {
                         "type": "string",
-                        "description": "Why this decision was made",
+                        "description": "Why this decision was made or the context behind this thought",
                     },
                     "alternatives_considered": {
                         "type": "array",
@@ -37,7 +37,7 @@ EXTRACTION_SCHEMA = {
                     },
                     "domain": {
                         "type": "string",
-                        "description": "Category: architecture, infrastructure, security, performance, etc.",
+                        "description": "Category: strategy, product, engineering, design, marketing, operations, finance, hr, legal, research, planning, process, communication, other",
                     },
                     "tags": {
                         "type": "array",
@@ -63,84 +63,115 @@ EXTRACTION_SCHEMA = {
         "technologies_mentioned": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "Technologies, frameworks, tools mentioned",
+            "description": "Technologies, tools, concepts, or key terms mentioned",
         },
     },
     "required": ["summary", "decisions", "open_questions", "technologies_mentioned"],
 }
 
 
-AUDIO_EXTRACTION_PROMPT = """Analyze this coding/working session audio recording. Your task is to extract all technical decisions, reasoning, and context.
+AUDIO_EXTRACTION_PROMPT = """Analyze this audio recording. Your task is to extract ALL decisions, thoughts, insights, ideas, and changes discussed - whether they are about business, strategy, product, engineering, operations, or any other topic.
 
-For each decision you identify:
-1. State the decision clearly and concisely
-2. Capture the full reasoning - WHY was this decision made?
-3. List any alternatives that were considered and rejected
+This could be a meeting, brainstorm, discussion, presentation, or any conversation. Extract EVERYTHING meaningful.
+
+For each decision, thought, or insight you identify:
+1. State it clearly and concisely
+2. Capture the full reasoning - WHY was this decided or thought? What's the context?
+3. List any alternatives that were considered
 4. Rate confidence based on the speaker's tone and certainty (0.0 = very uncertain, 1.0 = very confident)
-5. Provide accurate timestamps (in seconds) for when the decision was discussed
-6. Classify the domain (architecture, infrastructure, security, performance, database, api, frontend, testing, devops, etc.)
+5. Provide accurate timestamps (in seconds) for when it was discussed
+6. Classify the domain: strategy, product, engineering, design, marketing, operations, finance, hr, legal, research, planning, process, communication, or other
 7. Add relevant tags for searchability
 
 Also extract:
-- Open questions or uncertainties the speaker expressed
-- Technologies, frameworks, libraries, and tools mentioned
+- Open questions, action items, or uncertainties expressed
+- Key concepts, tools, names, or important terms mentioned
 
-Focus on capturing the REASONING and CONTEXT, not just the decisions themselves. The goal is to make this knowledge queryable later.
+IMPORTANT: Extract ALL meaningful content, not just technical decisions. Include:
+- Strategic directions and business decisions
+- Product ideas and feature discussions
+- Process changes and workflow decisions
+- Team decisions and organizational changes
+- Ideas, hypotheses, and theories discussed
+- Problems identified and proposed solutions
+- Any commitments or agreements made
 
-Be thorough - even small decisions can be important for understanding the codebase later."""
+Focus on capturing the REASONING and CONTEXT. The goal is to preserve team knowledge so it can be queried later.
+
+Be thorough - capture everything that could be valuable for the team to remember."""
 
 
-VIDEO_EXTRACTION_PROMPT = """Analyze this video recording of a coding/working session. Your task is to extract all technical decisions, reasoning, and context from both the visual and audio content.
+VIDEO_EXTRACTION_PROMPT = """Analyze this video recording. Your task is to extract ALL decisions, thoughts, insights, ideas, and changes from both the visual and audio content.
+
+This could be a meeting recording, presentation, brainstorm, screen share, or any video. Extract EVERYTHING meaningful.
 
 Pay special attention to:
-- Screen recordings showing code being written, edited, or reviewed
-- Diagrams, flowcharts, or architectural sketches shown on screen or whiteboard
-- Terminal/console output demonstrating tool choices or configurations
-- Code on screen that reveals implementation decisions
-- Non-verbal cues: highlighting, cursor movements indicating focus areas
-- Any slides or documentation shown during the session
+- Content shown on screen (slides, documents, diagrams, code, data)
+- Whiteboard sketches, drawings, or visual explanations
+- Demonstrations or walkthroughs
+- Non-verbal cues: highlighting, gestures, emphasis
+- Any visual aids or materials presented
 
-For each decision you identify:
-1. State the decision clearly and concisely
-2. Capture the full reasoning - WHY was this decision made? Include visual context (e.g., "as shown in the diagram at timestamp X")
-3. List any alternatives that were considered and rejected
-4. Rate confidence based on both spoken tone and visual emphasis (0.0 = very uncertain, 1.0 = very confident)
-5. Provide accurate timestamps (in seconds) for when the decision was discussed or shown
-6. Classify the domain (architecture, infrastructure, security, performance, database, api, frontend, testing, devops, etc.)
+For each decision, thought, or insight you identify:
+1. State it clearly and concisely
+2. Capture the full reasoning - WHY was this decided? Include visual context when relevant
+3. List any alternatives that were considered
+4. Rate confidence based on spoken tone and visual emphasis (0.0 = very uncertain, 1.0 = very confident)
+5. Provide accurate timestamps (in seconds) for when it was discussed or shown
+6. Classify the domain: strategy, product, engineering, design, marketing, operations, finance, hr, legal, research, planning, process, communication, or other
 7. Add relevant tags for searchability
 
 Also extract:
-- Open questions or uncertainties expressed verbally or shown as TODOs/FIXMEs on screen
-- Technologies, frameworks, libraries, and tools visible on screen or mentioned verbally
+- Open questions, action items, or TODOs shown or mentioned
+- Key concepts, tools, names, or important terms
 
-Focus on capturing the REASONING and CONTEXT from both visual and spoken content. The goal is to make this knowledge queryable later.
+IMPORTANT: Extract ALL meaningful content from both audio and visual elements:
+- Strategic directions and business decisions
+- Product ideas and feature discussions
+- Process changes and workflow decisions
+- Ideas, hypotheses, and theories discussed
+- Problems identified and proposed solutions
+- Any commitments or agreements made
 
-Be thorough - even small decisions visible in code or diagrams can be important for understanding the codebase later."""
+Focus on capturing the REASONING and CONTEXT. The goal is to preserve team knowledge.
+
+Be thorough - capture everything valuable from both what is said and what is shown."""
 
 
-DOCUMENT_EXTRACTION_PROMPT = """Analyze this written document (RFC, proposal, design doc, meeting notes, or technical specification). Your task is to extract all technical decisions, reasoning, and context.
+DOCUMENT_EXTRACTION_PROMPT = """Analyze this document. Your task is to extract ALL decisions, thoughts, insights, ideas, and changes - whether about business, strategy, product, engineering, or any other topic.
+
+This could be meeting notes, a proposal, a report, an email thread, a plan, or any written content. Extract EVERYTHING meaningful.
 
 Pay special attention to:
-- Explicit decisions stated in the document ("We decided...", "The approach will be...", "We chose...")
-- Implicit decisions revealed by the document structure and content
-- Language patterns indicating confidence levels: "we decided" / "we will" (high) vs "we might" / "we could" / "TBD" (low)
-- Section references and paragraph context for traceability
+- Explicit decisions ("We decided...", "The approach will be...", "We chose...")
+- Implicit decisions revealed by the content
+- Language indicating confidence: "we decided" / "we will" (high) vs "we might" / "TBD" (low)
 - Alternatives discussed and reasons for rejection
-- Open items, action items, and unresolved questions
+- Action items, next steps, and assignments
+- Open items and unresolved questions
 
-For each decision you identify:
-1. State the decision clearly and concisely
-2. Capture the full reasoning - WHY was this decision made? Reference specific sections or paragraphs
-3. List any alternatives that were considered and rejected
+For each decision, thought, or insight you identify:
+1. State it clearly and concisely
+2. Capture the full reasoning - WHY was this decided? Reference context when helpful
+3. List any alternatives that were considered
 4. Rate confidence based on language certainty (0.0 = tentative/proposed, 1.0 = definitive/approved)
 5. Use section/paragraph numbers for timestamp_start and timestamp_end (use 0 if no clear section)
-6. Classify the domain (architecture, infrastructure, security, performance, database, api, frontend, testing, devops, etc.)
+6. Classify the domain: strategy, product, engineering, design, marketing, operations, finance, hr, legal, research, planning, process, communication, or other
 7. Add relevant tags for searchability
 
 Also extract:
-- Open questions, TBDs, or unresolved items in the document
-- Technologies, frameworks, libraries, and tools mentioned
+- Open questions, TBDs, action items, or unresolved items
+- Key concepts, tools, names, or important terms mentioned
 
-Focus on capturing the REASONING and CONTEXT behind each decision. The goal is to make this knowledge queryable later.
+IMPORTANT: Extract ALL meaningful content:
+- Strategic directions and business decisions
+- Product ideas and feature discussions
+- Process changes and workflow decisions
+- Team decisions and organizational changes
+- Ideas, hypotheses, and theories discussed
+- Problems identified and proposed solutions
+- Any commitments or agreements made
 
-Be thorough - even minor decisions in technical documents can have significant downstream impact."""
+Focus on capturing the REASONING and CONTEXT. The goal is to preserve team knowledge.
+
+Be thorough - capture everything that could be valuable for the team to remember."""

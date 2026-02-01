@@ -1,4 +1,5 @@
 """Gemini API client wrapper."""
+import asyncio
 import structlog
 from google import genai
 from google.genai import types
@@ -18,11 +19,6 @@ class GeminiClient:
         self.pro_model = settings.gemini_pro_model
         self.flash_model = settings.gemini_flash_model
 
-    @staticmethod
-    def _thinking_config(level: str) -> types.ThinkingConfig:
-        """Create a ThinkingConfig from a level string."""
-        return types.ThinkingConfig(thinking_level=level.upper())
-
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def generate_content(
         self,
@@ -37,7 +33,6 @@ class GeminiClient:
 
         config = types.GenerateContentConfig(
             temperature=temperature,
-            thinking_config=self._thinking_config(thinking_level),
         )
 
         if response_schema:
@@ -66,15 +61,12 @@ class GeminiClient:
             types.Content(
                 parts=[
                     types.Part.from_uri(file_uri=audio_uri, mime_type=mime_type),
-                    types.Part.from_text(prompt),
+                    types.Part(text=prompt),
                 ]
             )
         ]
 
-        config = types.GenerateContentConfig(
-            thinking_config=self._thinking_config(thinking_level),
-            media_resolution="high",
-        )
+        config = types.GenerateContentConfig()
 
         if response_schema:
             config.response_mime_type = "application/json"
@@ -102,14 +94,12 @@ class GeminiClient:
             types.Content(
                 parts=[
                     types.Part.from_bytes(data=audio_data, mime_type=mime_type),
-                    types.Part.from_text(prompt),
+                    types.Part(text=prompt),
                 ]
             )
         ]
 
-        config = types.GenerateContentConfig(
-            thinking_config=self._thinking_config(thinking_level),
-        )
+        config = types.GenerateContentConfig()
 
         if response_schema:
             config.response_mime_type = "application/json"
@@ -137,15 +127,12 @@ class GeminiClient:
             types.Content(
                 parts=[
                     types.Part.from_uri(file_uri=video_uri, mime_type=mime_type),
-                    types.Part.from_text(prompt),
+                    types.Part(text=prompt),
                 ]
             )
         ]
 
-        config = types.GenerateContentConfig(
-            thinking_config=self._thinking_config(thinking_level),
-            media_resolution="high",
-        )
+        config = types.GenerateContentConfig()
 
         if response_schema:
             config.response_mime_type = "application/json"
@@ -170,9 +157,7 @@ class GeminiClient:
         """Generate content from document text."""
         full_prompt = f"{prompt}\n\n--- DOCUMENT CONTENT ---\n\n{document_text}"
 
-        config = types.GenerateContentConfig(
-            thinking_config=self._thinking_config(thinking_level),
-        )
+        config = types.GenerateContentConfig()
 
         if response_schema:
             config.response_mime_type = "application/json"
@@ -189,7 +174,16 @@ class GeminiClient:
     async def upload_file(self, file_path: str) -> str:
         """Upload a file to Gemini and return the URI."""
         uploaded = await self.client.aio.files.upload(file=file_path)
-        return uploaded.uri
+
+        # Wait for file to be in ACTIVE state
+        file_name = uploaded.name
+        for _ in range(30):  # Wait up to 60 seconds
+            file_info = await self.client.aio.files.get(name=file_name)
+            if file_info.state.name == "ACTIVE":
+                return file_info.uri
+            await asyncio.sleep(2)
+
+        raise TimeoutError(f"File {file_name} did not become ACTIVE within 60 seconds")
 
     async def create_chat(self, model: str | None = None, system_instruction: str | None = None):
         """Create a chat session."""

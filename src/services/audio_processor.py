@@ -20,12 +20,12 @@ class ExtractedDecision(BaseModel):
 
     decision: str
     reasoning: str
-    alternatives_considered: list[str]
+    alternatives_considered: list[str] = []
     confidence: float
-    timestamp_start: float
-    timestamp_end: float
+    timestamp_start: float = 0
+    timestamp_end: float = 0
     domain: str
-    tags: list[str]
+    tags: list[str] = []
 
 
 class SessionExtraction(BaseModel):
@@ -71,8 +71,9 @@ class AudioProcessor:
         await db.commit()
 
         try:
-            # Upload audio to Gemini
-            audio_uri = await self.gemini.upload_file(session.audio_file_path)
+            # Read audio file as bytes
+            with open(session.audio_file_path, "rb") as f:
+                audio_data = f.read()
 
             # Determine mime type from file extension
             ext = session.audio_file_path.lower().split(".")[-1]
@@ -83,19 +84,52 @@ class AudioProcessor:
                 "aac": "audio/aac",
                 "ogg": "audio/ogg",
                 "flac": "audio/flac",
+                "webm": "audio/webm",
             }
             mime_type = mime_types.get(ext, "audio/mp3")
 
-            # Extract reasoning from audio
-            response = await self.gemini.generate_with_audio(
-                audio_uri=audio_uri,
+            # Build prompt that asks for JSON output
+            json_prompt = f"""{AUDIO_EXTRACTION_PROMPT}
+
+Return your response as a valid JSON object with this exact structure:
+{{
+  "summary": "brief summary of the session",
+  "decisions": [
+    {{
+      "decision": "the decision, thought, or insight",
+      "reasoning": "why this was decided or the context behind it",
+      "alternatives_considered": ["alternative 1", "alternative 2"],
+      "confidence": 0.8,
+      "timestamp_start": 0,
+      "timestamp_end": 60,
+      "domain": "strategy|product|engineering|design|marketing|operations|finance|hr|legal|research|planning|process|communication|other",
+      "tags": ["tag1", "tag2"]
+    }}
+  ],
+  "open_questions": ["question 1", "question 2"],
+  "technologies_mentioned": ["concept1", "tool1", "term1"]
+}}
+
+Return ONLY the JSON object, no markdown formatting or explanation."""
+
+            # Extract reasoning from audio using inline bytes
+            response = await self.gemini.generate_with_audio_bytes(
+                audio_data=audio_data,
                 mime_type=mime_type,
-                prompt=AUDIO_EXTRACTION_PROMPT,
-                response_schema=EXTRACTION_SCHEMA,
-                thinking_level="high",
+                prompt=json_prompt,
             )
 
-            extraction = SessionExtraction(**json.loads(response))
+            # Clean up response if it has markdown formatting
+            response_text = response.strip()
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.startswith("```"):
+                response_text = response_text[3:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+            response_text = response_text.strip()
+
+            extraction = SessionExtraction(**json.loads(response_text))
 
             # Save extracted data to session
             session.summary = extraction.summary
