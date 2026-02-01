@@ -18,6 +18,11 @@ class GeminiClient:
         self.pro_model = settings.gemini_pro_model
         self.flash_model = settings.gemini_flash_model
 
+    @staticmethod
+    def _thinking_config(level: str) -> types.ThinkingConfig:
+        """Create a ThinkingConfig from a level string."""
+        return types.ThinkingConfig(thinking_level=level.upper())
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def generate_content(
         self,
@@ -32,7 +37,7 @@ class GeminiClient:
 
         config = types.GenerateContentConfig(
             temperature=temperature,
-            thinking_level=thinking_level,
+            thinking_config=self._thinking_config(thinking_level),
         )
 
         if response_schema:
@@ -67,7 +72,7 @@ class GeminiClient:
         ]
 
         config = types.GenerateContentConfig(
-            thinking_level=thinking_level,
+            thinking_config=self._thinking_config(thinking_level),
             media_resolution="high",
         )
 
@@ -103,7 +108,7 @@ class GeminiClient:
         ]
 
         config = types.GenerateContentConfig(
-            thinking_level=thinking_level,
+            thinking_config=self._thinking_config(thinking_level),
         )
 
         if response_schema:
@@ -113,6 +118,69 @@ class GeminiClient:
         response = await self.client.aio.models.generate_content(
             model=self.pro_model,
             contents=contents,
+            config=config,
+        )
+
+        return response.text
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    async def generate_with_video(
+        self,
+        video_uri: str,
+        mime_type: str,
+        prompt: str,
+        response_schema: dict | None = None,
+        thinking_level: str = "high",
+    ) -> str:
+        """Generate content from video input."""
+        contents = [
+            types.Content(
+                parts=[
+                    types.Part.from_uri(file_uri=video_uri, mime_type=mime_type),
+                    types.Part.from_text(prompt),
+                ]
+            )
+        ]
+
+        config = types.GenerateContentConfig(
+            thinking_config=self._thinking_config(thinking_level),
+            media_resolution="high",
+        )
+
+        if response_schema:
+            config.response_mime_type = "application/json"
+            config.response_schema = response_schema
+
+        response = await self.client.aio.models.generate_content(
+            model=self.pro_model,
+            contents=contents,
+            config=config,
+        )
+
+        return response.text
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    async def generate_with_document_text(
+        self,
+        document_text: str,
+        prompt: str,
+        response_schema: dict | None = None,
+        thinking_level: str = "high",
+    ) -> str:
+        """Generate content from document text."""
+        full_prompt = f"{prompt}\n\n--- DOCUMENT CONTENT ---\n\n{document_text}"
+
+        config = types.GenerateContentConfig(
+            thinking_config=self._thinking_config(thinking_level),
+        )
+
+        if response_schema:
+            config.response_mime_type = "application/json"
+            config.response_schema = response_schema
+
+        response = await self.client.aio.models.generate_content(
+            model=self.pro_model,
+            contents=full_prompt,
             config=config,
         )
 

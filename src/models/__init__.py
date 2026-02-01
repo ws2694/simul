@@ -5,6 +5,7 @@ from src.models.decision import Decision, DecisionStatus, VisibilityLevel
 from src.models.session import CodingSession, SessionType
 from src.models.team import Team, TeamMembership, TeamRole
 from src.models.query_log import QueryLog
+from src.models.google_auth import GoogleOAuthToken
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "TeamMembership",
     "TeamRole",
     "QueryLog",
+    "GoogleOAuthToken",
 ]

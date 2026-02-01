@@ -14,11 +14,15 @@ import {
   RefreshCw,
   Loader2,
   CheckCircle,
+  Video,
+  FileText,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { getBotStats, getRecentReasoning, listTeams } from '@/lib/api';
 import { AppShell } from '@/components/layout';
 import { AudioRecorder } from '@/components/AudioRecorder';
+import { VideoUploader } from '@/components/VideoUploader';
+import { GoogleDocsImporter } from '@/components/GoogleDocsImporter';
 import { BotQuery } from '@/components/BotQuery';
 import { formatConfidence, formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -248,7 +252,7 @@ function ProcessingStatusCard({
             <div>
               <p className="font-medium">Processing Session...</p>
               <p className="text-sm text-muted-foreground">
-                AI is extracting decisions from your recording
+                AI is extracting decisions from your session
               </p>
             </div>
           </div>
@@ -411,14 +415,22 @@ function DashboardContent() {
 
           {/* Tabs with proper TabsContent */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsList className="grid w-full max-w-2xl grid-cols-4">
               <TabsTrigger value="query" className="gap-2">
                 <Search className="h-4 w-4" />
                 Query Bot
               </TabsTrigger>
               <TabsTrigger value="record" className="gap-2">
                 <Mic className="h-4 w-4" />
-                Record Session
+                Record
+              </TabsTrigger>
+              <TabsTrigger value="video" className="gap-2">
+                <Video className="h-4 w-4" />
+                Video
+              </TabsTrigger>
+              <TabsTrigger value="document" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Document
               </TabsTrigger>
             </TabsList>
 
@@ -428,6 +440,14 @@ function DashboardContent() {
 
             <TabsContent value="record" className="mt-6">
               <AudioRecorder onSessionCreated={handleSessionCreated} />
+            </TabsContent>
+
+            <TabsContent value="video" className="mt-6">
+              <VideoUploader onSessionCreated={handleSessionCreated} />
+            </TabsContent>
+
+            <TabsContent value="document" className="mt-6">
+              <GoogleDocsImporter onSessionCreated={handleSessionCreated} />
             </TabsContent>
           </Tabs>
         </motion.div>

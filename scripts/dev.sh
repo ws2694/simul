@@ -24,7 +24,7 @@ done
 echo "PostgreSQL is ready!"
 
 # Activate virtual environment
-source venv/bin/activate
+source .venv/bin/activate
 
 # Start API in background
 echo "Starting API server..."
