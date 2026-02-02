@@ -156,6 +156,75 @@
     @apply bg-black/20 backdrop-blur-md border border-white/10;
   }
 
+  /* Game UI - Floating Panel */
+  .floating-panel {
+    @apply bg-white rounded-3xl shadow-game-panel;
+    animation: panel-spring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Game UI - Hotspot */
+  .hotspot {
+    @apply absolute cursor-pointer transition-all duration-200;
+  }
+
+  .hotspot-indicator {
+    @apply absolute w-8 h-8 rounded-full bg-lavender/60 backdrop-blur-sm;
+    @apply flex items-center justify-center shadow-hotspot;
+    @apply opacity-0 transition-opacity duration-200;
+  }
+
+  .hotspot:hover .hotspot-indicator {
+    @apply opacity-100;
+  }
+
+  .hotspot-pulse {
+    @apply absolute inset-0 rounded-full bg-lavender/40;
+    animation: hotspot-pulse 2s ease-in-out infinite;
+  }
+
+  /* Game UI - Cluster Bubble */
+  .cluster-bubble {
+    @apply absolute rounded-full cursor-pointer transition-all duration-300;
+    @apply flex flex-col items-center justify-center text-center;
+    @apply hover:scale-110 hover:shadow-cluster-glow;
+  }
+
+  .cluster-bubble-small {
+    @apply w-20 h-20;
+  }
+
+  .cluster-bubble-medium {
+    @apply w-28 h-28;
+  }
+
+  .cluster-bubble-large {
+    @apply w-36 h-36;
+  }
+
+  /* Game UI - Panel Header */
+  .panel-header {
+    @apply flex items-center gap-3 p-5 border-b border-lavender-light;
+  }
+
+  .panel-icon {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center;
+  }
+
+  /* Game UI - Backdrop */
+  .game-backdrop {
+    @apply fixed inset-0 bg-game-text-dark/20 backdrop-blur-sm;
+    @apply transition-opacity duration-200;
+  }
+
+  /* Game UI - Scene Container */
+  .scene-container {
+    @apply relative w-full h-full overflow-hidden;
+  }
+
+  .scene-background {
+    @apply absolute inset-0 bg-contain bg-center bg-no-repeat;
+  }
+
   /* Gradient text */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400;
@@ -246,4 +315,54 @@
 /* Transition all for smooth interactions */
 .transition-all-smooth {
   @apply transition-all duration-200 ease-out;
+}
+
+/* Game UI Keyframe Animations */
+@keyframes panel-spring {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  70% {
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes hotspot-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.4;
+  }
+}
+
+@keyframes dash-flow {
+  0% {
+    stroke-dashoffset: 10;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Game UI Connection Lines */
+.connection-line {
+  stroke-dasharray: 5, 5;
+  animation: dash-flow 0.5s linear infinite;
 }

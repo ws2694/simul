@@ -7,10 +7,42 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['var(--font-heading)', 'Poppins', 'system-ui', 'sans-serif'],
-        body: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Quicksand', 'Poppins', 'system-ui', 'sans-serif'],
+        body: ['var(--font-body)', 'Nunito', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // Game UI Pastel Colors
+        lavender: {
+          DEFAULT: '#c4b5e0',
+          light: '#e8e0f0',
+          dark: '#9b8ac4',
+        },
+        mint: {
+          DEFAULT: '#a8d5ba',
+          light: '#d4ede0',
+        },
+        peach: '#f5d0c5',
+        cream: '#faf8f5',
+        'soft-pink': '#f0c6d4',
+        'soft-blue': '#b8d4e8',
+        'soft-yellow': '#f5e6b8',
+        'cosmic-purple': '#9b7ed4',
+        'cosmic-pink': '#e491b3',
+        'game-text': {
+          dark: '#5a5470',
+          light: '#8a8498',
+        },
+        // Domain colors for knowledge graph clusters
+        domain: {
+          backend: '#a8d5ba',
+          frontend: '#c4b5e0',
+          database: '#b8d4e8',
+          security: '#f5d0c5',
+          devops: '#f5e6b8',
+          api: '#87ceeb',
+          architecture: '#dda0dd',
+          testing: '#98d8c8',
+        },
         // Indigo primary scale
         primary: {
           50: '#eef2ff',
@@ -147,6 +179,36 @@ module.exports = {
           '0%, 100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)' },
           '50%': { boxShadow: '0 0 40px rgba(99, 102, 241, 0.6)' },
         },
+        // Game UI animations
+        'rec-pulse': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.6', transform: 'scale(1.1)' },
+        },
+        'wave': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        'dash-flow': {
+          '0%': { strokeDashoffset: '10' },
+          '100%': { strokeDashoffset: '0' },
+        },
+        'panel-spring': {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+          '70%': { transform: 'scale(1.02) translateY(-2px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(196, 181, 224, 0.4)' },
+          '50%': { boxShadow: '0 0 40px rgba(196, 181, 224, 0.7)' },
+        },
+        'hotspot-pulse': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
+          '50%': { transform: 'scale(1.2)', opacity: '0.4' },
+        },
       },
       animation: {
         'pulse-ring': 'pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -160,6 +222,14 @@ module.exports = {
         'waveform': 'waveform 0.5s ease-in-out infinite',
         'count-up': 'count-up 0.5s ease-out forwards',
         'glow': 'glow 2s ease-in-out infinite',
+        // Game UI animations
+        'rec-pulse': 'rec-pulse 1.5s ease-in-out infinite',
+        'wave': 'wave 2s ease-in-out infinite',
+        'dash-flow': 'dash-flow 0.5s linear infinite',
+        'panel-spring': 'panel-spring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'float': 'float 3s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+        'hotspot-pulse': 'hotspot-pulse 2s ease-in-out infinite',
       },
       backdropBlur: {
         xs: '2px',
@@ -169,6 +239,12 @@ module.exports = {
         'glass-sm': '0 4px 16px 0 rgba(31, 38, 135, 0.05)',
         'card-hover': '0 20px 40px -12px rgba(0, 0, 0, 0.15)',
         'glow-primary': '0 0 20px rgba(99, 102, 241, 0.3)',
+        // Game UI shadows
+        'game-panel': '0 25px 50px -12px rgba(90, 84, 112, 0.25)',
+        'game-card': '0 4px 20px rgba(90, 84, 112, 0.08)',
+        'game-hover': '0 8px 30px rgba(90, 84, 112, 0.12)',
+        'cluster-glow': '0 0 30px rgba(196, 181, 224, 0.5)',
+        'hotspot': '0 0 15px rgba(196, 181, 224, 0.6)',
       },
     },
   },
