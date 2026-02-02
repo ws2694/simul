@@ -33,7 +33,7 @@ export default function PageTransition({
 
   return (
     <div
-      className="absolute cursor-pointer z-20"
+      className="absolute cursor-pointer z-10"
       style={{
         top: position.top,
         right: position.right,

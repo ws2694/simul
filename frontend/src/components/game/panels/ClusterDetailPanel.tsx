@@ -1,6 +1,7 @@
 'use client';
 
-import { GitBranch } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { GitBranch, ChevronRight } from 'lucide-react';
 import FloatingPanel from '../FloatingPanel';
 import { formatConfidence, formatRelativeTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,13 @@ export default function ClusterDetailPanel({
   domain,
   decisions
 }: ClusterDetailPanelProps) {
+  const router = useRouter();
+
+  const handleDecisionClick = (decisionId: number) => {
+    onClose();
+    router.push(`/decisions/${decisionId}`);
+  };
+
   // Calculate stats
   const totalDecisions = decisions.length;
   const avgConfidence = decisions.length > 0
@@ -70,6 +78,7 @@ export default function ClusterDetailPanel({
           decisions.map((decision) => (
             <div
               key={decision.id}
+              onClick={() => handleDecisionClick(decision.id)}
               className="p-4 rounded-xl bg-cream/50 hover:bg-cream transition-colors cursor-pointer group"
             >
               <div className="flex items-start justify-between gap-3">
@@ -98,18 +107,21 @@ export default function ClusterDetailPanel({
                     </span>
                   </div>
                 </div>
-                <div
-                  className={`
-                    shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold
-                    ${decision.confidence >= 0.7
-                      ? 'bg-mint-light text-green-700'
-                      : decision.confidence >= 0.4
-                      ? 'bg-soft-yellow text-amber-700'
-                      : 'bg-peach text-red-700'
-                    }
-                  `}
-                >
-                  {formatConfidence(decision.confidence)}
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`
+                      shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold
+                      ${decision.confidence >= 0.7
+                        ? 'bg-mint-light text-green-700'
+                        : decision.confidence >= 0.4
+                        ? 'bg-soft-yellow text-amber-700'
+                        : 'bg-peach text-red-700'
+                      }
+                    `}
+                  >
+                    {formatConfidence(decision.confidence)}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-game-text-light group-hover:text-cosmic-purple transition-colors" />
                 </div>
               </div>
             </div>

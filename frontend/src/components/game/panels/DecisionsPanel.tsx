@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Image as ImageIcon, RefreshCw, ChevronRight } from 'lucide-react';
 import FloatingPanel from '../FloatingPanel';
 import { getRecentReasoning } from '@/lib/api';
 import { formatConfidence, formatRelativeTime } from '@/lib/utils';
@@ -14,8 +15,14 @@ interface DecisionsPanelProps {
 }
 
 export default function DecisionsPanel({ isOpen, onClose }: DecisionsPanelProps) {
+  const router = useRouter();
   const [decisions, setDecisions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleDecisionClick = (decisionId: number) => {
+    onClose();
+    router.push(`/decisions/${decisionId}`);
+  };
 
   const loadDecisions = useCallback(async () => {
     try {
@@ -65,6 +72,7 @@ export default function DecisionsPanel({ isOpen, onClose }: DecisionsPanelProps)
           decisions.map((decision) => (
             <div
               key={decision.id}
+              onClick={() => handleDecisionClick(decision.id)}
               className="p-4 rounded-xl bg-cream/50 hover:bg-cream transition-colors cursor-pointer group"
             >
               <div className="flex items-start justify-between gap-3">
@@ -87,18 +95,21 @@ export default function DecisionsPanel({ isOpen, onClose }: DecisionsPanelProps)
                     </span>
                   </div>
                 </div>
-                <div
-                  className={`
-                    shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold
-                    ${decision.confidence >= 0.7
-                      ? 'bg-mint-light text-green-700'
-                      : decision.confidence >= 0.4
-                      ? 'bg-soft-yellow text-amber-700'
-                      : 'bg-peach text-red-700'
-                    }
-                  `}
-                >
-                  {formatConfidence(decision.confidence)}
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`
+                      shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold
+                      ${decision.confidence >= 0.7
+                        ? 'bg-mint-light text-green-700'
+                        : decision.confidence >= 0.4
+                        ? 'bg-soft-yellow text-amber-700'
+                        : 'bg-peach text-red-700'
+                      }
+                    `}
+                  >
+                    {formatConfidence(decision.confidence)}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-game-text-light group-hover:text-cosmic-purple transition-colors" />
                 </div>
               </div>
             </div>
