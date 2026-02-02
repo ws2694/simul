@@ -4,8 +4,6 @@ import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home,
-  Search,
   User,
   Users,
   CircleDot,
@@ -14,7 +12,7 @@ import {
 import {
   GameShell,
   BotMascot,
-  Hotspot,
+  PageTransition,
   ClusterBubble,
   KnowledgeLegend,
   ClusterDetailPanel,
@@ -305,17 +303,15 @@ function KnowledgeClustersContent() {
         )}
       </div>
 
-      {/* Stats Display */}
-      <div className="absolute top-4 right-4 flex gap-2 z-20">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-game-card">
-          <span className="text-xs text-game-text-light">Decisions</span>
-          <p className="text-lg font-semibold text-game-text-dark">{filteredDecisions.length}</p>
-        </div>
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-game-card">
-          <span className="text-xs text-game-text-light">Domains</span>
-          <p className="text-lg font-semibold text-cosmic-purple">{clusteredDecisions.length}</p>
-        </div>
-      </div>
+      {/* Home Page Preview - Navigate back */}
+      <PageTransition
+        previewImage="/game-assets/room-background.png"
+        targetPath="/"
+        position={{ top: '4%', right: '4%' }}
+        size={140}
+        label="Back to Home"
+      />
+
 
       {/* Bot Mascot - Opens Search/Filter Panel */}
       <BotMascot
@@ -325,14 +321,6 @@ function KnowledgeClustersContent() {
         onClick={() => setActivePanel('filter')}
       />
 
-      {/* Home Hotspot - Navigate back */}
-      <Hotspot
-        position={{ top: '60%', left: '5%', width: '8%', height: '15%' }}
-        icon={<Home className="w-4 h-4" />}
-        title="Back to Home"
-        description="Return to the main room"
-        onClick={() => router.push('/')}
-      />
 
       {/* Cluster Bubbles */}
       {decisions.length === 0 ? (

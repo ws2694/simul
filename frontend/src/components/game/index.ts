@@ -3,6 +3,7 @@ export { default as GameHeader } from './GameHeader';
 export { default as Hotspot } from './Hotspot';
 export { default as FloatingPanel } from './FloatingPanel';
 export { default as BotMascot } from './BotMascot';
+export { default as PageTransition } from './PageTransition';
 
 // Knowledge Graph components
 export { default as ClusterBubble } from './ClusterBubble';

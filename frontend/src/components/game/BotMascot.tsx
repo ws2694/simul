@@ -5,8 +5,10 @@ import Image from 'next/image';
 
 interface BotMascotProps {
   position: {
-    bottom: string;
-    left: string;
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
   };
   size?: number;
   label?: string;
@@ -15,7 +17,7 @@ interface BotMascotProps {
 
 export default function BotMascot({
   position,
-  size = 180,
+  size = 220,
   label = 'Ask Query Bot',
   onClick
 }: BotMascotProps) {
@@ -25,8 +27,10 @@ export default function BotMascot({
     <div
       className="absolute cursor-pointer z-10"
       style={{
+        top: position.top,
         bottom: position.bottom,
         left: position.left,
+        right: position.right,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -44,7 +48,6 @@ export default function BotMascot({
           alt="Query Bot"
           width={size}
           height={size}
-          className="drop-shadow-lg"
           priority
         />
       </div>

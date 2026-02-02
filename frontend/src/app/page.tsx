@@ -2,13 +2,14 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Laptop, Image as ImageIcon, Users, BookOpen } from 'lucide-react';
+import { Laptop, Users } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { getBotStats } from '@/lib/api';
 import {
   GameShell,
   Hotspot,
   BotMascot,
+  PageTransition,
   QueryPanel,
   WorkspacePanel,
   DecisionsPanel,
@@ -19,23 +20,13 @@ import { useSessionProcessing } from '@/hooks/useSessionProcessing';
 
 // Hotspot configurations based on the room background
 const HOTSPOTS = {
-  desk: {
-    position: { top: '45%', left: '25%', width: '18%', height: '25%' },
+  bookshelf: {
+    position: { top: '18%', left: '48%', width: '18%', height: '32%' },
     title: 'Workspace',
     description: 'Upload documents, record audio, or add videos',
   },
-  picture: {
-    position: { top: '15%', left: '55%', width: '15%', height: '20%' },
-    title: 'Recent Decisions',
-    description: 'View your latest captured decisions',
-  },
-  bookshelf: {
-    position: { top: '25%', left: '75%', width: '12%', height: '35%' },
-    title: 'Knowledge Graph',
-    description: 'Explore your decision clusters',
-  },
   chair: {
-    position: { top: '60%', left: '70%', width: '15%', height: '25%' },
+    position: { top: '48%', left: '60%', width: '20%', height: '28%' },
     title: 'Your Teams',
     description: 'Manage teams and collaborations',
   },
@@ -110,37 +101,50 @@ function HomeContent() {
     >
       {/* Bot Mascot - Opens Query Panel */}
       <BotMascot
-        position={{ bottom: '5%', left: '5%' }}
-        size={160}
+        position={{ bottom: '2%', left: '-3%' }}
+        size={350}
         label="Ask Query Bot"
         onClick={() => setActivePanel('query')}
       />
 
-      {/* Desk Hotspot - Workspace Panel */}
+      {/* Bookshelf Hotspot - Workspace Panel */}
       <Hotspot
-        position={HOTSPOTS.desk.position}
+        position={HOTSPOTS.bookshelf.position}
         icon={<Laptop className="w-4 h-4" />}
-        title={HOTSPOTS.desk.title}
-        description={HOTSPOTS.desk.description}
+        title={HOTSPOTS.bookshelf.title}
+        description={HOTSPOTS.bookshelf.description}
         onClick={() => setActivePanel('workspace')}
       />
 
-      {/* Picture Hotspot - Recent Decisions Panel */}
-      <Hotspot
-        position={HOTSPOTS.picture.position}
-        icon={<ImageIcon className="w-4 h-4" />}
-        title={HOTSPOTS.picture.title}
-        description={HOTSPOTS.picture.description}
+      {/* Bot Speech Bubble - Recent Decisions */}
+      <div
+        className="absolute z-20 cursor-pointer"
+        style={{ bottom: '28%', left: '18%' }}
         onClick={() => setActivePanel('decisions')}
-      />
+      >
+        <div className="relative bg-white rounded-2xl px-5 py-3 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">📜</span>
+            <div>
+              <p className="font-heading font-semibold text-sm text-game-text-dark">Recent Decisions</p>
+              <p className="text-xs text-game-text-light">View your latest captured decisions</p>
+            </div>
+          </div>
+          {/* Speech bubble tail */}
+          <div
+            className="absolute w-4 h-4 bg-white transform rotate-45"
+            style={{ bottom: '-8px', left: '20px' }}
+          />
+        </div>
+      </div>
 
-      {/* Bookshelf Hotspot - Navigate to Knowledge Graph */}
-      <Hotspot
-        position={HOTSPOTS.bookshelf.position}
-        icon={<BookOpen className="w-4 h-4" />}
-        title={HOTSPOTS.bookshelf.title}
-        description={HOTSPOTS.bookshelf.description}
-        onClick={() => router.push('/knowledge-graph')}
+      {/* Knowledge Graph Preview - Animated transition to knowledge graph page */}
+      <PageTransition
+        previewImage="/game-assets/observatory-background.png"
+        targetPath="/knowledge-graph"
+        position={{ top: '4%', right: '4%' }}
+        size={140}
+        label="Knowledge Graph"
       />
 
       {/* Chair Hotspot - Teams Panel */}
@@ -152,19 +156,6 @@ function HomeContent() {
         onClick={() => setActivePanel('teams')}
       />
 
-      {/* Mini Stats Display */}
-      {stats && (
-        <div className="absolute top-4 right-4 flex gap-2">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-game-card">
-            <span className="text-xs text-game-text-light">Decisions</span>
-            <p className="text-lg font-semibold text-game-text-dark">{stats.total_decisions}</p>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-game-card">
-            <span className="text-xs text-game-text-light">Confidence</span>
-            <p className="text-lg font-semibold text-cosmic-purple">{Math.round(stats.avg_confidence * 100)}%</p>
-          </div>
-        </div>
-      )}
 
       {/* Floating Panels */}
       <QueryPanel
