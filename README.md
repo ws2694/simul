@@ -203,6 +203,53 @@ cognitive-state-protocol/
 └── docker-compose.yml
 ```
 
+### Local Development Setup (Important!)
+
+**Database Connection:**
+- Docker exposes PostgreSQL on port **5433** (not 5432)
+- The `.env` file in the project root contains `DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/cognitive_state`
+- When running the backend from `src/` directory, the config loads `../.env` (parent directory)
+
+**Starting Services:**
+
+1. Start Docker services (PostgreSQL + Redis):
+```bash
+docker-compose up -d db redis
+```
+
+2. Start backend (from project root):
+```bash
+cd src
+source ../venv/bin/activate
+python -m uvicorn main:app --reload --port 8000
+```
+
+3. Start frontend:
+```bash
+cd frontend
+npm run dev
+```
+
+**Common Issues:**
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `column "X" does not exist` | Backend connected to wrong DB (port 5432 instead of 5433) | Check `.env` has correct DATABASE_URL with port 5433 |
+| Empty page after login | `.next` cache corrupted | Run `rm -rf frontend/.next` and restart |
+| Backend can't find `.env` | Running from wrong directory | Run backend from `src/` directory |
+| asyncpg prepared statement errors | Stale connection pool after schema change | Restart both database container and backend |
+
+**Verifying Database Connection:**
+```bash
+# Check what port backend is using
+cd src && source ../venv/bin/activate
+python -c "from src.config import get_settings; print(get_settings().database_url)"
+# Should show: postgresql+asyncpg://postgres:postgres@localhost:5433/cognitive_state
+
+# Check tables exist
+docker exec cognitive-state-protocol-db-1 psql -U postgres -d cognitive_state -c "\dt"
+```
+
 ### Running Tests
 ```bash
 source .venv/bin/activate
