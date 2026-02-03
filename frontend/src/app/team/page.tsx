@@ -100,8 +100,8 @@ export default function TeamsPage() {
             previewImage="/game-assets/room-background.png"
             targetPath="/"
             position={{ top: '4%', right: '4%' }}
-            size={120}
-            label="Back to Home"
+            size={140}
+            label="Home"
           />
 
           {/* Knowledge Graph Preview - Navigate to knowledge graph */}
@@ -109,7 +109,7 @@ export default function TeamsPage() {
             previewImage="/game-assets/observatory-background.png"
             targetPath="/knowledge-graph"
             position={{ bottom: '4%', right: '4%' }}
-            size={120}
+            size={140}
             label="Knowledge Graph"
           />
 

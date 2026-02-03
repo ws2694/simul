@@ -165,8 +165,8 @@ export default function TeamPage() {
           <PageTransition
             previewImage="/game-assets/room-background.png"
             targetPath="/"
-            position={{ top: '12%', right: '4%' }}
-            size={100}
+            position={{ top: '4%', right: '4%' }}
+            size={140}
             label="Home"
           />
 
@@ -174,8 +174,8 @@ export default function TeamPage() {
           <PageTransition
             previewImage="/game-assets/observatory-background.png"
             targetPath="/knowledge-graph"
-            position={{ bottom: '12%', right: '4%' }}
-            size={100}
+            position={{ bottom: '4%', right: '4%' }}
+            size={140}
             label="Knowledge Graph"
           />
 
