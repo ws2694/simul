@@ -3,18 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Users, ArrowRight, Plus } from 'lucide-react';
+import { Users, ArrowRight, Plus, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/store';
 import { listTeams } from '@/lib/api';
-import { AppShell } from '@/components/layout';
 import { CreateTeamDialog } from '@/components/teams';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { staggerContainerVariants, staggerItemVariants, fadeInVariants } from '@/lib/animations';
-import Link from 'next/link';
 
-function TeamsListContent() {
+export default function TeamsPage() {
   const router = useRouter();
   const { token } = useAuthStore();
   const [teams, setTeams] = useState<any[]>([]);
@@ -43,107 +38,121 @@ function TeamsListContent() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
+      <div className="fixed inset-0 bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-[#e8e0f0] flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-3xl">👥</span>
+          </div>
+          <p className="text-[#8a8498]">Loading teams...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <motion.div
-      variants={staggerContainerVariants}
-      initial="initial"
-      animate="animate"
-      className="space-y-6"
-    >
+    <div className="fixed inset-0 overflow-hidden" style={{ fontFamily: 'Nunito, sans-serif' }}>
       {/* Header */}
-      <motion.div variants={fadeInVariants} className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary-100 flex items-center justify-center">
-            <Users className="h-5 w-5 text-primary-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Your Teams</h1>
-            <p className="text-sm text-muted-foreground">
-              Collaborate and query team knowledge
-            </p>
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 z-50">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 px-4 py-2 bg-[#faf8f5] rounded-lg text-[#5a5470] hover:bg-[#e8e0f0] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#c4b5e0] to-[#9b7ed4] flex items-center justify-center text-white font-bold">
+              <Users className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-[#5a5470]" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+              Your Teams
+            </span>
           </div>
         </div>
+
         <CreateTeamDialog
           onTeamCreated={loadTeams}
           trigger={
-            <Button className="gap-2">
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#c4b5e0] to-[#9b7ed4] rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg transition-shadow">
               <Plus className="h-4 w-4" />
               Create Team
-            </Button>
+            </button>
           }
         />
-      </motion.div>
+      </header>
 
-      {/* Teams Grid */}
-      {teams.length > 0 ? (
-        <motion.div
-          variants={staggerContainerVariants}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          {teams.map((team, i) => (
-            <motion.div key={team.id} variants={staggerItemVariants} custom={i}>
-              <Link href={`/team/${team.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex items-center gap-2 group-hover:text-primary-600 transition-colors">
-                      <Users className="h-5 w-5" />
-                      {team.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        {team.member_count} member{team.member_count !== 1 ? 's' : ''}
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+      {/* Main Content */}
+      <main className="pt-16 h-full">
+        <div className="relative w-full h-full flex items-center justify-center bg-white">
+          {/* Background Image */}
+          <Image
+            src="/asset-environment-1770090935004.png"
+            alt="Teams Room"
+            fill
+            className="object-contain"
+            priority
+          />
+
+          {/* Teams Grid Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <motion.div
+              className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-4xl w-full max-h-[70vh] overflow-auto"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              {teams.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teams.map((team, i) => (
+                    <motion.button
+                      key={team.id}
+                      onClick={() => router.push(`/team/${team.id}`)}
+                      className="flex items-center justify-between p-5 rounded-2xl bg-[#faf8f5] hover:bg-[#e8e0f0] transition-all group text-left border-2 border-transparent hover:border-[#c4b5e0]"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#c4b5e0] to-[#9b7ed4] flex items-center justify-center">
+                          <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-[#5a5470] group-hover:text-[#9b7ed4] transition-colors">
+                            {team.name}
+                          </p>
+                          <p className="text-sm text-[#8a8498]">
+                            {team.member_count} member{team.member_count !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-[#8a8498] group-hover:text-[#9b7ed4] group-hover:translate-x-1 transition-all" />
+                    </motion.button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 rounded-full bg-[#faf8f5] flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-10 h-10 text-[#8a8498] opacity-50" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#5a5470] mb-2">No teams yet</h3>
+                  <p className="text-[#8a8498] mb-6">
+                    Create a team to collaborate with others and run bot meetings
+                  </p>
+                  <CreateTeamDialog
+                    onTeamCreated={loadTeams}
+                    trigger={
+                      <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#c4b5e0] to-[#9b7ed4] rounded-xl text-white font-bold shadow-md hover:shadow-lg transition-shadow mx-auto">
+                        <Plus className="h-5 w-5" />
+                        Create Your First Team
+                      </button>
+                    }
+                  />
+                </div>
+              )}
             </motion.div>
-          ))}
-        </motion.div>
-      ) : (
-        <motion.div variants={fadeInVariants}>
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No teams yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create a team to collaborate with others and run bot meetings
-              </p>
-              <CreateTeamDialog
-                onTeamCreated={loadTeams}
-                trigger={
-                  <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Your First Team
-                  </Button>
-                }
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-}
-
-export default function TeamsPage() {
-  return (
-    <AppShell>
-      <TeamsListContent />
-    </AppShell>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

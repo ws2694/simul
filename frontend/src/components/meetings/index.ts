@@ -2,3 +2,8 @@ export { StartMeetingDialog } from './StartMeetingDialog';
 export { MeetingRoom } from './MeetingRoom';
 export { MeetingMessage } from './MeetingMessage';
 export { MeetingSummary } from './MeetingSummary';
+export { BotCharacter } from './BotCharacter';
+export { TopicCard } from './TopicCard';
+export { MeetingControls } from './MeetingControls';
+export { DiscussionPanel } from './DiscussionPanel';
+export { ConsensusBadge } from './ConsensusBadge';
