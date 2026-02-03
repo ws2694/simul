@@ -161,20 +161,20 @@ export default function TeamPage() {
             priority
           />
 
-          {/* Home Preview - Navigate back */}
+          {/* Home Preview - Navigate back (top-right) */}
           <PageTransition
             previewImage="/game-assets/room-background.png"
             targetPath="/"
             position={{ top: '12%', right: '4%' }}
             size={100}
-            label="Back to Home"
+            label="Home"
           />
 
-          {/* Knowledge Graph Preview */}
+          {/* Knowledge Graph Preview (bottom-right) */}
           <PageTransition
             previewImage="/game-assets/observatory-background.png"
             targetPath="/knowledge-graph"
-            position={{ top: '28%', right: '4%' }}
+            position={{ bottom: '12%', right: '4%' }}
             size={100}
             label="Knowledge Graph"
           />
