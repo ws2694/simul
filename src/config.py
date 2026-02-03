@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_redirect_uri: str = ""
 
-    model_config = {"env_file": "../.env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 @lru_cache

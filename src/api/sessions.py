@@ -1,4 +1,6 @@
 """Coding session management endpoints."""
+import re
+import uuid
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -10,6 +12,16 @@ from src.models import CodingSession, SessionType
 from src.services.audio_processor import get_audio_processor
 from src.services.media_processor import get_media_processor
 from src.services.storage_service import get_storage_service
+
+
+def sanitize_filename(title: str) -> str:
+    """Sanitize title for use in filename - ASCII only, no special chars."""
+    # Replace non-ASCII with empty string, keep alphanumeric and underscores
+    sanitized = re.sub(r'[^a-zA-Z0-9_-]', '', title.replace(' ', '_'))
+    # If nothing left after sanitization, use a UUID
+    if not sanitized:
+        sanitized = str(uuid.uuid4())[:8]
+    return sanitized[:50]
 
 router = APIRouter()
 
@@ -113,7 +125,7 @@ async def upload_session_audio(
     audio_data = await audio.read()
 
     ext = audio.filename.split(".")[-1] if audio.filename else "mp3"
-    filename = f"session_{title.replace(' ', '_')[:50]}.{ext}"
+    filename = f"session_{sanitize_filename(title)}.{ext}"
     file_path = await storage.save_file(audio_data, filename, current_user.id)
 
     # Create session
@@ -185,7 +197,7 @@ async def upload_session_video(
     # Save file
     storage = get_storage_service()
     ext = video.filename.split(".")[-1] if video.filename else "mp4"
-    filename = f"video_{title.replace(' ', '_')[:50]}.{ext}"
+    filename = f"video_{sanitize_filename(title)}.{ext}"
     file_path = await storage.save_file(video_data, filename, current_user.id)
 
     # Create session
@@ -256,7 +268,7 @@ async def upload_session_document(
     # Save file
     storage = get_storage_service()
     ext = document.filename.split(".")[-1] if document.filename else "pdf"
-    filename = f"doc_{title.replace(' ', '_')[:50]}.{ext}"
+    filename = f"doc_{sanitize_filename(title)}.{ext}"
     file_path = await storage.save_file(doc_data, filename, current_user.id)
 
     # Create session
