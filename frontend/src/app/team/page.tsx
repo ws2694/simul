@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useAuthStore } from '@/lib/store';
 import { listTeams } from '@/lib/api';
 import { CreateTeamDialog } from '@/components/teams';
+import { PageTransition } from '@/components/game';
 
 export default function TeamsPage() {
   const router = useRouter();
@@ -92,6 +93,24 @@ export default function TeamsPage() {
             fill
             className="object-contain"
             priority
+          />
+
+          {/* Home Preview - Navigate back */}
+          <PageTransition
+            previewImage="/game-assets/room-background.png"
+            targetPath="/"
+            position={{ top: '4%', right: '4%' }}
+            size={120}
+            label="Back to Home"
+          />
+
+          {/* Knowledge Graph Preview - Navigate to knowledge graph */}
+          <PageTransition
+            previewImage="/game-assets/observatory-background.png"
+            targetPath="/knowledge-graph"
+            position={{ bottom: '4%', right: '4%' }}
+            size={120}
+            label="Knowledge Graph"
           />
 
           {/* Teams Grid Overlay */}

@@ -10,6 +10,7 @@ import { getTeamMembers, getTeamActivity, listMeetings, type Meeting } from '@/l
 import { BotQuery } from '@/components/BotQuery';
 import { ConflictDetector } from '@/components/ConflictDetector';
 import { StartMeetingDialog } from '@/components/meetings';
+import { PageTransition } from '@/components/game';
 import {
   TeamMember,
   TeamHotspot,
@@ -158,6 +159,24 @@ export default function TeamPage() {
             fill
             className="object-contain"
             priority
+          />
+
+          {/* Home Preview - Navigate back */}
+          <PageTransition
+            previewImage="/game-assets/room-background.png"
+            targetPath="/"
+            position={{ top: '12%', right: '4%' }}
+            size={100}
+            label="Back to Home"
+          />
+
+          {/* Knowledge Graph Preview */}
+          <PageTransition
+            previewImage="/game-assets/observatory-background.png"
+            targetPath="/knowledge-graph"
+            position={{ top: '28%', right: '4%' }}
+            size={100}
+            label="Knowledge Graph"
           />
 
           {/* Team Members as Bot Characters */}

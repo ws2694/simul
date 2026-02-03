@@ -147,6 +147,15 @@ function HomeContent() {
         label="Knowledge Graph"
       />
 
+      {/* Teams Preview - Navigate to teams page */}
+      <PageTransition
+        previewImage="/asset-environment-1770090935004.png"
+        targetPath="/team"
+        position={{ bottom: '4%', right: '4%' }}
+        size={140}
+        label="Teams"
+      />
+
       {/* Chair Hotspot - Teams Panel */}
       <Hotspot
         position={HOTSPOTS.chair.position}

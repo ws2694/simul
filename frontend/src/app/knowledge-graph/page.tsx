@@ -11,10 +11,8 @@ import {
 } from 'lucide-react';
 import {
   GameShell,
-  BotMascot,
   PageTransition,
   ClusterBubble,
-  KnowledgeLegend,
   ClusterDetailPanel,
   SearchFilterPanel,
 } from '@/components/game';
@@ -312,15 +310,14 @@ function KnowledgeClustersContent() {
         label="Back to Home"
       />
 
-
-      {/* Bot Mascot - Opens Search/Filter Panel */}
-      <BotMascot
-        position={{ bottom: '5%', left: '5%' }}
+      {/* Teams Preview - Navigate to teams */}
+      <PageTransition
+        previewImage="/asset-environment-1770090935004.png"
+        targetPath="/team"
+        position={{ bottom: '4%', right: '4%' }}
         size={140}
-        label="Search & Filter"
-        onClick={() => setActivePanel('filter')}
+        label="Teams"
       />
-
 
       {/* Cluster Bubbles */}
       {decisions.length === 0 ? (
@@ -358,9 +355,6 @@ function KnowledgeClustersContent() {
           })}
         </AnimatePresence>
       )}
-
-      {/* Legend */}
-      {filteredDecisions.length > 0 && <KnowledgeLegend />}
 
       {/* Search/Filter Panel */}
       <SearchFilterPanel
