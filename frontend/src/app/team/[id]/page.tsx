@@ -12,7 +12,6 @@ import { ConflictDetector } from '@/components/ConflictDetector';
 import { StartMeetingDialog } from '@/components/meetings';
 import { PageTransition } from '@/components/game';
 import {
-  TeamMember,
   TeamHotspot,
   MeetingsPanel,
   StatsBar,
@@ -178,16 +177,6 @@ export default function TeamPage() {
             size={140}
             label="Knowledge Graph"
           />
-
-          {/* Team Members as Bot Characters */}
-          {members.slice(0, 4).map((member, index) => (
-            <TeamMember
-              key={member.user_id}
-              member={member}
-              index={index}
-              onClick={() => setShowMeetingsPanel(true)}
-            />
-          ))}
 
           {/* Hotspots - positioned around the 4 chairs */}
           <TeamHotspot
