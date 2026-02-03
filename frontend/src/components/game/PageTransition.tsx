@@ -31,6 +31,10 @@ export default function PageTransition({
     router.push(targetPath);
   };
 
+  // Determine label position based on element position
+  const isAtBottom = !!position.bottom;
+  const isAtRight = !!position.right;
+
   return (
     <div
       className="absolute cursor-pointer z-10"
@@ -46,7 +50,7 @@ export default function PageTransition({
     >
       <div
         className={`
-          relative overflow-hidden transition-transform duration-300
+          relative overflow-hidden transition-transform duration-300 rounded-xl
           ${isHovered ? 'scale-110' : 'scale-100'}
         `}
       >
@@ -55,31 +59,35 @@ export default function PageTransition({
           alt={label}
           width={size}
           height={size}
-          className="object-cover"
+          className="object-cover rounded-xl"
           style={{ filter: 'none' }}
           priority
         />
       </div>
 
-      {/* Hover label */}
+      {/* Hover label - positioned based on element location */}
       <div
         className={`
-          absolute left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-game-panel px-4 py-2 whitespace-nowrap
+          absolute bg-[#5a5470] rounded-xl shadow-lg px-4 py-2 whitespace-nowrap
           transition-all duration-200
-          ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
+          ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          ${isAtRight ? 'right-0' : 'left-1/2 -translate-x-1/2'}
         `}
-        style={{ top: `calc(100% + 12px)` }}
+        style={isAtBottom
+          ? { bottom: `calc(100% + 12px)` }
+          : { top: `calc(100% + 12px)` }
+        }
       >
-        <span className="font-heading font-semibold text-sm text-cosmic-purple">
+        <span className="font-semibold text-sm text-white">
           {label}
         </span>
+        {/* Arrow pointing to image */}
         <div
-          className="absolute w-3 h-3 bg-white transform rotate-45"
-          style={{
-            top: '-6px',
-            left: '50%',
-            marginLeft: '-6px',
-          }}
+          className="absolute w-3 h-3 bg-[#5a5470] transform rotate-45"
+          style={isAtBottom
+            ? { bottom: '-6px', right: isAtRight ? '20px' : '50%', marginRight: isAtRight ? '0' : '-6px' }
+            : { top: '-6px', right: isAtRight ? '20px' : '50%', marginRight: isAtRight ? '0' : '-6px' }
+          }
         />
       </div>
     </div>
