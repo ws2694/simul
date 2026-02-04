@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Bot, Users, ClipboardList } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   getMeeting,
@@ -125,7 +125,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
       <div className="fixed inset-0 bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-[#e8e0f0] flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">🤖</span>
+            <Bot className="w-8 h-8 text-[#9b7ed4]" />
           </div>
           <p className="text-[#8a8498]">Loading meeting...</p>
         </div>
@@ -192,7 +192,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
 
           {/* Participants Count */}
           <div className="flex items-center gap-2 px-4 py-2 bg-[#faf8f5] rounded-full text-sm text-[#5a5470]">
-            <span>👥</span>
+            <Users className="w-4 h-4" />
             <span className="font-semibold">{meeting.participants.length}</span>
           </div>
         </div>
@@ -312,12 +312,13 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
       {/* Auto-show summary when meeting completes */}
       {isCompleted && meeting.summary && !showSummary && (
         <motion.button
-          className="fixed bottom-[5%] left-[5%] z-20 px-5 py-3 bg-white rounded-2xl shadow-lg text-[#5a5470] font-semibold hover:shadow-xl transition-shadow"
+          className="fixed bottom-[5%] left-[5%] z-20 px-5 py-3 bg-white rounded-2xl shadow-lg text-[#5a5470] font-semibold hover:shadow-xl transition-shadow flex items-center gap-2"
           onClick={() => setShowSummary(true)}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          📋 View Summary
+          <ClipboardList className="w-4 h-4" />
+          View Summary
         </motion.button>
       )}
     </div>

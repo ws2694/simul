@@ -4,6 +4,7 @@ export { default as Hotspot } from './Hotspot';
 export { default as FloatingPanel } from './FloatingPanel';
 export { default as BotMascot } from './BotMascot';
 export { default as PageTransition } from './PageTransition';
+export { default as ProcessingIndicator } from './ProcessingIndicator';
 
 // Knowledge Graph components
 export { default as ClusterBubble } from './ClusterBubble';

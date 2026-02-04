@@ -42,7 +42,7 @@ export default function TeamsPage() {
       <div className="fixed inset-0 bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-[#e8e0f0] flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">👥</span>
+            <Users className="w-8 h-8 text-[#9b7ed4]" />
           </div>
           <p className="text-[#8a8498]">Loading teams...</p>
         </div>

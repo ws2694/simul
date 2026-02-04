@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Laptop, Users } from 'lucide-react';
+import { Laptop, Users, Scroll } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { getBotStats } from '@/lib/api';
 import {
@@ -42,8 +42,18 @@ function HomeContent() {
   // Panel states
   const [activePanel, setActivePanel] = useState<string | null>(null);
 
+  // Unread decisions count (increments when processing completes)
+  const [unreadCount, setUnreadCount] = useState(0);
+
   // Session processing hook
-  const { startTracking } = useSessionProcessing();
+  const { status: processingStatus, startTracking } = useSessionProcessing();
+
+  // Track when processing completes to show unread badge
+  useEffect(() => {
+    if (processingStatus === 'completed') {
+      setUnreadCount(prev => prev + 1);
+    }
+  }, [processingStatus]);
 
   // Handle session created callback
   const handleSessionCreated = useCallback((session: any) => {
@@ -124,7 +134,7 @@ function HomeContent() {
       >
         <div className="relative bg-white rounded-2xl px-5 py-3 shadow-lg hover:shadow-xl transition-shadow">
           <div className="flex items-center gap-3">
-            <span className="text-xl">📜</span>
+            <Scroll className="w-5 h-5 text-[#9b7ed4]" />
             <div>
               <p className="font-heading font-semibold text-sm text-game-text-dark">Recent Decisions</p>
               <p className="text-xs text-game-text-light">View your latest captured decisions</p>
@@ -137,6 +147,37 @@ function HomeContent() {
           />
         </div>
       </div>
+
+      {/* Bot Notification Bubble - New Decisions Alert */}
+      {unreadCount > 0 && (
+        <div
+          className="absolute z-30 cursor-pointer animate-in slide-in-from-left-4 fade-in duration-500"
+          style={{ bottom: '42%', left: '14%' }}
+          onClick={() => {
+            setActivePanel('decisions');
+            setUnreadCount(0);
+          }}
+        >
+          <div className="relative bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl px-5 py-3 shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-white font-bold">{unreadCount}</span>
+              </div>
+              <div>
+                <p className="font-heading font-semibold text-sm text-white">
+                  New Decision{unreadCount > 1 ? 's' : ''} Ready!
+                </p>
+                <p className="text-xs text-white/80">Click to view extracted insights</p>
+              </div>
+            </div>
+            {/* Speech bubble tail */}
+            <div
+              className="absolute w-4 h-4 bg-green-400 transform rotate-45"
+              style={{ bottom: '-8px', left: '24px' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Knowledge Graph Preview - Animated transition to knowledge graph page */}
       <PageTransition

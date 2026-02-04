@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import type { MeetingMessage as MeetingMessageType } from '@/lib/api';
 
 interface MeetingMessageProps {
@@ -91,9 +92,10 @@ export function MeetingMessage({ message, isLatest }: MeetingMessageProps) {
             getBgColor()
           )}
         >
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-            {message.content}
-          </p>
+          <MarkdownRenderer
+            content={message.content}
+            className="text-sm"
+          />
         </div>
 
         {/* Citations */}

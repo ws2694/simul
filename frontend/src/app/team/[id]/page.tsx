@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Users, Bot, Search, AlertTriangle, BarChart3, X } from 'lucide-react';
 import Image from 'next/image';
 import { useAuthStore } from '@/lib/store';
 import { getTeamMembers, getTeamActivity, listMeetings, type Meeting } from '@/lib/api';
@@ -91,7 +91,7 @@ export default function TeamPage() {
       <div className="fixed inset-0 bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-[#e8e0f0] flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">👥</span>
+            <Users className="w-8 h-8 text-[#9b7ed4]" />
           </div>
           <p className="text-[#8a8498]">Loading team...</p>
         </div>
@@ -125,7 +125,7 @@ export default function TeamPage() {
         <div className="flex items-center gap-3">
           {/* Team Badge */}
           <div className="flex items-center gap-2 px-4 py-2 bg-[#e8e0f0] rounded-full text-sm font-semibold text-[#9b8ac4]">
-            <span>👥</span>
+            <Users className="w-4 h-4" />
             {members.length} Members
           </div>
 
@@ -142,7 +142,7 @@ export default function TeamPage() {
             onClick={() => setShowMeetingDialog(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#c4b5e0] to-[#9b7ed4] rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg transition-shadow"
           >
-            <span>🤖</span>
+            <Bot className="w-4 h-4" />
             Start Bot Meeting
           </button>
         </div>
@@ -180,7 +180,7 @@ export default function TeamPage() {
 
           {/* Hotspots - positioned around the 4 chairs */}
           <TeamHotspot
-            icon="🤖"
+            icon={<Bot className="w-5 h-5 text-[#9b7ed4]" />}
             title="Bot Meetings"
             description="View and start meetings"
             badge={meetings.length}
@@ -189,7 +189,7 @@ export default function TeamPage() {
           />
 
           <TeamHotspot
-            icon="🔍"
+            icon={<Search className="w-5 h-5 text-[#4a8a5a]" />}
             title="Team Query"
             description="Search team knowledge"
             position={{ top: '33%', right: '33%', width: '5%', height: '8%' }}
@@ -197,7 +197,7 @@ export default function TeamPage() {
           />
 
           <TeamHotspot
-            icon="⚠️"
+            icon={<AlertTriangle className="w-5 h-5 text-[#c49b3a]" />}
             title="Conflicts"
             description="Detect decision conflicts"
             position={{ top: '52%', left: '27%', width: '5%', height: '8%' }}
@@ -205,7 +205,7 @@ export default function TeamPage() {
           />
 
           <TeamHotspot
-            icon="📊"
+            icon={<BarChart3 className="w-5 h-5 text-[#9b7ed4]" />}
             title="Activity"
             description="Team activity log"
             position={{ top: '52%', right: '27%', width: '5%', height: '8%' }}
@@ -248,8 +248,8 @@ export default function TeamPage() {
             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#d4ede0] flex items-center justify-center text-xl">
-                    🔍
+                  <div className="w-11 h-11 rounded-xl bg-[#d4ede0] flex items-center justify-center">
+                    <Search className="w-5 h-5 text-[#4a8a5a]" />
                   </div>
                   <div>
                     <h2 className="font-bold text-[#5a5470] text-lg">Team Query</h2>
@@ -260,7 +260,7 @@ export default function TeamPage() {
                   onClick={() => setShowQueryPanel(false)}
                   className="w-9 h-9 rounded-lg bg-[#faf8f5] flex items-center justify-center text-[#8a8498] hover:bg-[#e8e0f0] transition-colors"
                 >
-                  ×
+                  <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-6 max-h-[70vh] overflow-y-auto">
@@ -290,8 +290,8 @@ export default function TeamPage() {
             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#f5e6b8] flex items-center justify-center text-xl">
-                    ⚠️
+                  <div className="w-11 h-11 rounded-xl bg-[#f5e6b8] flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-[#c49b3a]" />
                   </div>
                   <div>
                     <h2 className="font-bold text-[#5a5470] text-lg">Conflicts</h2>
@@ -302,7 +302,7 @@ export default function TeamPage() {
                   onClick={() => setShowConflictsPanel(false)}
                   className="w-9 h-9 rounded-lg bg-[#faf8f5] flex items-center justify-center text-[#8a8498] hover:bg-[#e8e0f0] transition-colors"
                 >
-                  ×
+                  <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-6 max-h-[70vh] overflow-y-auto">
@@ -332,8 +332,8 @@ export default function TeamPage() {
             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center text-xl">
-                    📊
+                  <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-[#9b7ed4]" />
                   </div>
                   <div>
                     <h2 className="font-bold text-[#5a5470] text-lg">Team Activity</h2>
@@ -344,7 +344,7 @@ export default function TeamPage() {
                   onClick={() => setShowActivityPanel(false)}
                   className="w-9 h-9 rounded-lg bg-[#faf8f5] flex items-center justify-center text-[#8a8498] hover:bg-[#e8e0f0] transition-colors"
                 >
-                  ×
+                  <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">

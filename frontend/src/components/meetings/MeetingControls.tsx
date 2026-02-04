@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageCircle, FileText, Play, Handshake, Square, Check } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface MeetingControlsProps {
   canRun: boolean;
@@ -34,7 +35,7 @@ export function MeetingControls({
       <div className="flex items-center gap-3 px-6 py-3.5 bg-white rounded-2xl shadow-lg">
         {/* View Discussion */}
         <ControlButton
-          icon="💬"
+          icon={<MessageCircle className="w-5 h-5" />}
           title="View Discussion"
           onClick={onViewDiscussion}
           variant="secondary"
@@ -42,7 +43,7 @@ export function MeetingControls({
 
         {/* Topic/Add */}
         <ControlButton
-          icon="📝"
+          icon={<FileText className="w-5 h-5" />}
           title="Topic"
           onClick={() => {}}
           variant="secondary"
@@ -54,7 +55,7 @@ export function MeetingControls({
         {/* Run Discussion */}
         {canRun && (
           <ControlButton
-            icon={isRunning ? undefined : "▶️"}
+            icon={isRunning ? undefined : <Play className="w-5 h-5" />}
             title={isRunning ? "Running..." : "Run Discussion"}
             onClick={onRunDiscussion}
             variant="primary"
@@ -65,14 +66,15 @@ export function MeetingControls({
 
         {/* Completed Badge */}
         {isCompleted && (
-          <div className="px-4 py-2 bg-[#d4ede0] text-[#4a8a5a] rounded-full text-sm font-semibold">
-            ✓ Completed
+          <div className="px-4 py-2 bg-[#d4ede0] text-[#4a8a5a] rounded-full text-sm font-semibold flex items-center gap-1.5">
+            <Check className="w-4 h-4" />
+            Completed
           </div>
         )}
 
         {/* Force Consensus */}
         <ControlButton
-          icon="🤝"
+          icon={<Handshake className="w-5 h-5" />}
           title="Consensus"
           onClick={() => {}}
           variant="secondary"
@@ -83,7 +85,7 @@ export function MeetingControls({
 
         {/* End Meeting */}
         <ControlButton
-          icon={isEnding ? undefined : "⏹️"}
+          icon={isEnding ? undefined : <Square className="w-5 h-5" />}
           title={isEnding ? "Ending..." : "End Meeting"}
           onClick={onEndMeeting}
           variant="danger"
@@ -96,7 +98,7 @@ export function MeetingControls({
 }
 
 interface ControlButtonProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   onClick: () => void;
   variant: 'primary' | 'secondary' | 'danger';
@@ -105,7 +107,7 @@ interface ControlButtonProps {
 }
 
 function ControlButton({ icon, title, onClick, variant, disabled, isLoading }: ControlButtonProps) {
-  const baseClasses = "w-12 h-12 rounded-full flex items-center justify-center text-xl cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses = "w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses = {
     primary: "bg-gradient-to-br from-[#c4b5e0] to-[#9b7ed4] text-white shadow-md hover:scale-110",

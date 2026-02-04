@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, MessageCircle, Bot } from 'lucide-react';
 import Image from 'next/image';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import type { MeetingMessage } from '@/lib/api';
 
 // Bot avatar mapping
@@ -70,8 +71,8 @@ export function DiscussionPanel({
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center text-xl">
-                  💬
+                <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-[#9b7ed4]" />
                 </div>
                 <div>
                   <h2 className="font-bold text-[#5a5470] text-lg" style={{ fontFamily: 'Quicksand, sans-serif' }}>
@@ -93,7 +94,7 @@ export function DiscussionPanel({
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <div className="w-16 h-16 rounded-full bg-[#faf8f5] flex items-center justify-center mb-4">
-                    <span className="text-3xl opacity-50">🤖</span>
+                    <Bot className="w-8 h-8 text-[#8a8498] opacity-50" />
                   </div>
                   <p className="text-[#8a8498] mb-1">No messages yet</p>
                   <p className="text-sm text-[#8a8498]/70">
@@ -191,9 +192,10 @@ function MessageBubble({ message, avatar }: MessageBubbleProps) {
             {formatTime(message.created_at)}
           </span>
         </div>
-        <p className="text-sm text-[#8a8498] leading-relaxed">
-          {message.content}
-        </p>
+        <MarkdownRenderer
+          content={message.content}
+          className="text-sm text-[#8a8498]"
+        />
 
         {/* Citations */}
         {message.cited_decisions && message.cited_decisions.length > 0 && (

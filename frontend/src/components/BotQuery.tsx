@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { NoResults } from '@/components/empty-states';
 import { SourceCardSkeleton } from '@/components/skeletons';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import {
   fadeInVariants,
   staggerContainerVariants,
@@ -274,9 +275,10 @@ export function BotQuery({ mode, targetId, targetName }: BotQueryProps) {
                       'border border-border/50'
                     )}
                   >
-                    <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-                      {result.synthesis || result.answer}
-                    </p>
+                    <MarkdownRenderer
+                      content={result.synthesis || result.answer}
+                      className="text-foreground"
+                    />
                   </div>
                   <div className="absolute -top-3 -right-3">
                     <ConfidenceRing confidence={result.confidence} />
@@ -374,9 +376,10 @@ export function BotQuery({ mode, targetId, targetName }: BotQueryProps) {
                                     <span className="text-xs font-medium text-muted-foreground block mb-1.5">
                                       Reasoning
                                     </span>
-                                    <p className="text-sm text-foreground/80 leading-relaxed">
-                                      {source.reasoning}
-                                    </p>
+                                    <MarkdownRenderer
+                                      content={source.reasoning}
+                                      className="text-sm text-foreground/80"
+                                    />
                                   </div>
                                 </div>
                               </div>

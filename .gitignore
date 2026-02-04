@@ -12,3 +12,15 @@ logs/
 media/
 .DS_Store
 .venv/
+
+# Demo and planning files
+demo-materials/
+MOCK_DATA_INSERTION_PLAN.md
+frontend/MEETING_UI_MIGRATION_PLAN.md
+frontend/game-ui-*.html
+frontend/tsconfig.tsbuildinfo
+
+# Design assets (not for repo)
+*.jpg
+src/*.svg
+src/asset-*.png

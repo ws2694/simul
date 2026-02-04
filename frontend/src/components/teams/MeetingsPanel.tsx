@@ -1,7 +1,8 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Bot, MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import type { Meeting } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
@@ -14,16 +15,16 @@ interface MeetingsPanelProps {
 }
 
 export function MeetingsPanel({ isOpen, onClose, meetings, onNewMeeting }: MeetingsPanelProps) {
-  const getStatusConfig = (status: Meeting['status']) => {
+  const getStatusConfig = (status: Meeting['status']): { icon: ReactNode; bg: string; badge: string } => {
     switch (status) {
       case 'in_progress':
-        return { icon: '💬', bg: 'bg-[#e8e0f0]', badge: 'bg-[#e8e0f0] text-[#9b8ac4]' };
+        return { icon: <MessageCircle className="w-5 h-5 text-[#9b8ac4]" />, bg: 'bg-[#e8e0f0]', badge: 'bg-[#e8e0f0] text-[#9b8ac4]' };
       case 'completed':
-        return { icon: '✅', bg: 'bg-[#d4ede0]', badge: 'bg-[#d4ede0] text-[#4a8a5a]' };
+        return { icon: <CheckCircle className="w-5 h-5 text-[#4a8a5a]" />, bg: 'bg-[#d4ede0]', badge: 'bg-[#d4ede0] text-[#4a8a5a]' };
       case 'cancelled':
-        return { icon: '❌', bg: 'bg-red-100', badge: 'bg-red-100 text-red-600' };
+        return { icon: <XCircle className="w-5 h-5 text-red-600" />, bg: 'bg-red-100', badge: 'bg-red-100 text-red-600' };
       default:
-        return { icon: '🕐', bg: 'bg-[#faf8f5]', badge: 'bg-[#faf8f5] text-[#8a8498]' };
+        return { icon: <Clock className="w-5 h-5 text-[#8a8498]" />, bg: 'bg-[#faf8f5]', badge: 'bg-[#faf8f5] text-[#8a8498]' };
     }
   };
 
@@ -51,8 +52,8 @@ export function MeetingsPanel({ isOpen, onClose, meetings, onNewMeeting }: Meeti
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center text-xl">
-                  🤖
+                <div className="w-11 h-11 rounded-xl bg-[#e8e0f0] flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-[#9b7ed4]" />
                 </div>
                 <div>
                   <h2 className="font-bold text-[#5a5470] text-lg" style={{ fontFamily: 'Quicksand, sans-serif' }}>
@@ -74,7 +75,7 @@ export function MeetingsPanel({ isOpen, onClose, meetings, onNewMeeting }: Meeti
               {meetings.length === 0 ? (
                 <div className="text-center py-10">
                   <div className="w-16 h-16 bg-[#faf8f5] rounded-full flex items-center justify-center mx-auto mb-4 opacity-60">
-                    <span className="text-3xl">🤖</span>
+                    <Bot className="w-8 h-8 text-[#8a8498]" />
                   </div>
                   <h3 className="text-base font-bold text-[#5a5470] mb-2">No meetings yet</h3>
                   <p className="text-sm text-[#8a8498] mb-5">
@@ -91,7 +92,7 @@ export function MeetingsPanel({ isOpen, onClose, meetings, onNewMeeting }: Meeti
                           className="flex items-center gap-4 p-4 rounded-2xl cursor-pointer border-2 border-transparent hover:border-[#c4b5e0] hover:bg-[#faf8f5] transition-all"
                           whileHover={{ x: 4 }}
                         >
-                          <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center text-xl`}>
+                          <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center`}>
                             {config.icon}
                           </div>
                           <div className="flex-1 min-w-0">
