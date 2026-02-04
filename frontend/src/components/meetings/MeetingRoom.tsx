@@ -15,6 +15,7 @@ import { BotCharacter } from './BotCharacter';
 import { TopicCard } from './TopicCard';
 import { MeetingControls } from './MeetingControls';
 import { DiscussionPanel } from './DiscussionPanel';
+import { TimelineDiscussionView } from './TimelineDiscussionView';
 import { ConsensusBadge } from './ConsensusBadge';
 import { MeetingSummary } from './MeetingSummary';
 
@@ -35,6 +36,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
 
   // ============ NEW UI STATE ============
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
 
   // ============ PRESERVED LOGIC (unchanged) ============
@@ -214,7 +216,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
           <TopicCard
             topic={meeting.topic}
             description={meeting.description ?? undefined}
-            onClick={() => setIsPanelOpen(true)}
+            onClick={() => setIsTimelineOpen(true)}
           />
 
           {/* Bot Characters */}
@@ -224,7 +226,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
               participant={participant}
               index={index}
               isSpeaking={isRunning || participant.user_id === latestSpeakerId}
-              onClick={() => setIsPanelOpen(true)}
+              onClick={() => setIsTimelineOpen(true)}
             />
           ))}
 
@@ -237,7 +239,7 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
             isCompleted={isCompleted}
             onRunDiscussion={handleRunDiscussion}
             onEndMeeting={handleEndMeeting}
-            onViewDiscussion={() => setIsPanelOpen(true)}
+            onViewDiscussion={() => setIsTimelineOpen(true)}
           />
 
           {/* Consensus Badge */}
@@ -262,7 +264,16 @@ export function MeetingRoom({ meetingId }: MeetingRoomProps) {
         </div>
       </main>
 
-      {/* Discussion Panel */}
+      {/* Timeline Discussion View (New Interactive UI) */}
+      <TimelineDiscussionView
+        isOpen={isTimelineOpen}
+        onClose={() => setIsTimelineOpen(false)}
+        messages={meeting.messages}
+        participants={meeting.participants}
+        isRunning={isRunning}
+      />
+
+      {/* Discussion Panel (Legacy - for quick reference) */}
       <DiscussionPanel
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}

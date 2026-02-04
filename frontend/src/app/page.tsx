@@ -148,8 +148,35 @@ function HomeContent() {
         </div>
       </div>
 
+      {/* Bot Processing Bubble - Shows while processing */}
+      {(processingStatus === 'pending' || processingStatus === 'processing') && (
+        <div
+          className="absolute z-30 animate-in slide-in-from-left-4 fade-in duration-500"
+          style={{ bottom: '42%', left: '14%' }}
+        >
+          <div className="relative bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl px-5 py-3 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              </div>
+              <div>
+                <p className="font-heading font-semibold text-sm text-white">
+                  {processingStatus === 'pending' ? 'Starting...' : 'Processing...'}
+                </p>
+                <p className="text-xs text-white/80">Extracting decisions from your content</p>
+              </div>
+            </div>
+            {/* Speech bubble tail */}
+            <div
+              className="absolute w-4 h-4 bg-blue-400 transform rotate-45"
+              style={{ bottom: '-8px', left: '24px' }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Bot Notification Bubble - New Decisions Alert */}
-      {unreadCount > 0 && (
+      {unreadCount > 0 && processingStatus !== 'pending' && processingStatus !== 'processing' && (
         <div
           className="absolute z-30 cursor-pointer animate-in slide-in-from-left-4 fade-in duration-500"
           style={{ bottom: '42%', left: '14%' }}

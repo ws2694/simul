@@ -6,4 +6,5 @@ export { BotCharacter } from './BotCharacter';
 export { TopicCard } from './TopicCard';
 export { MeetingControls } from './MeetingControls';
 export { DiscussionPanel } from './DiscussionPanel';
+export { TimelineDiscussionView } from './TimelineDiscussionView';
 export { ConsensusBadge } from './ConsensusBadge';

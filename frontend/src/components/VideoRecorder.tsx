@@ -207,8 +207,10 @@ export function VideoRecorder({ onSessionCreated }: VideoRecorderProps) {
         description: 'AI is extracting decisions from your recording...',
       });
 
+      // Start tracking immediately so the processing bubble shows
+      onSessionCreated?.(session);
+
       setTimeout(() => {
-        onSessionCreated?.(session);
         handleDiscard();
       }, 2000);
     } catch (err: any) {

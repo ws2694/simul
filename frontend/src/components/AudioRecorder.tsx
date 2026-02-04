@@ -276,8 +276,10 @@ export function AudioRecorder({ onSessionCreated }: AudioRecorderProps) {
         description: 'AI is extracting your decisions...',
       });
 
+      // Start tracking immediately so the processing bubble shows
+      onSessionCreated?.(session);
+
       setTimeout(() => {
-        onSessionCreated?.(session);
         resetRecording();
         setTitle('');
         setGitBranch('');
