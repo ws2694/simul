@@ -1,5 +1,6 @@
 """Application configuration."""
 from functools import lru_cache
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -13,6 +14,14 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/cognitive_state"
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def convert_to_asyncpg(cls, v: str) -> str:
+        """Convert postgresql:// to postgresql+asyncpg:// for async support."""
+        if v.startswith("postgresql://") and "+asyncpg" not in v:
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
