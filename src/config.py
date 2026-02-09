@@ -19,9 +19,9 @@ class Settings(BaseSettings):
 
     # Gemini API
     gemini_api_key: str = ""
-    gemini_pro_model: str = "gemini-2.0-flash"
-    gemini_flash_model: str = "gemini-2.0-flash"
-    gemini_live_model: str = "gemini-2.0-flash"
+    gemini_pro_model: str = "gemini-3-pro-preview"
+    gemini_flash_model: str = "gemini-3-flash-preview"
+    gemini_live_model: str = "gemini-3-flash-preview"
 
     # Storage
     storage_backend: str = "local"  # "local", "s3", "gcs"

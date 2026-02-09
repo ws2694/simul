@@ -47,7 +47,7 @@ export function useSessionProcessing(): UseSessionProcessingResult {
 
     let isMounted = true;
     let pollCount = 0;
-    const maxPolls = 60; // Stop after 3 minutes (60 * 3s)
+    const maxPolls = 200; // Stop after 10 minutes (200 * 3s) - video processing can take time
 
     const pollStatus = async (): Promise<boolean> => {
       try {
@@ -77,6 +77,8 @@ export function useSessionProcessing(): UseSessionProcessingResult {
 
         pollCount++;
         if (pollCount >= maxPolls) {
+          setStatus('idle'); // Reset status so processing bubble disappears
+          setSessionId(null);
           toast({
             title: "Processing Timeout",
             description: "Processing is taking longer than expected. Check back later.",
@@ -86,9 +88,23 @@ export function useSessionProcessing(): UseSessionProcessingResult {
         }
 
         return false;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error polling session status:', error);
-        return false; // Continue polling on error
+
+        // Count errors towards max polls
+        pollCount++;
+        if (pollCount >= maxPolls) {
+          setStatus('idle');
+          setSessionId(null);
+          toast({
+            title: "Status Check Failed",
+            description: "Could not verify processing status. Please refresh to check.",
+            variant: "destructive",
+          });
+          return true;
+        }
+
+        return false; // Continue polling on transient errors
       }
     };
 
