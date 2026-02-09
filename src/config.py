@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
     google_redirect_uri: str = ""
 
+    # CORS (comma-separated list of allowed origins, or "*" for all)
+    cors_origins: str = "*"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
